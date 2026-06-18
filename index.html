@@ -1,1 +1,963 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Equilibrium Is a Death Sentence</title><style>body{margin:0;background:#08090b;color:#eee9df;font:18px/1.7 system-ui;padding:36px}main{max-width:850px;margin:auto}h1{font:400 70px Georgia,serif;line-height:1;margin:22px 0}p{color:#aaa39a}.lead{font:24px/1.6 Georgia,serif;color:#eee9df}.k{color:#d6b36a;letter-spacing:.16em;text-transform:uppercase;font-size:12px}.box{border:1px solid #2b3342;background:#11151d;border-radius:22px;padding:22px;margin:24px 0}.btn{display:inline-block;border:1px solid #8bd3e6;color:#8bd3e6;border-radius:999px;padding:10px 14px;text-decoration:none;margin:8px 8px 0 0}.fine{border-top:1px solid #2b3342;margin-top:36px;padding-top:16px;font-size:13px;color:#817a72}</style></head><body><main><div class="k">Carter's Principle / RAD-PDSA</div><h1>Equilibrium Is a Death Sentence.</h1><p class="lead">We were taught to chase balance. But perfect balance is not life. It is the end of motion, the loss of usable difference, the place where nothing can choose, change, or become.</p><p>If zero were truly possible, reality would not be here to notice it. A system with no differential has no direction. A universe with no asymmetry has no reason to become. Existence implies distinguishability. Distinguishability implies asymmetry.</p><div class="box"><p>RAD-PDSA began as a practical stability architecture for adaptive systems. Potentiation expands. Restraint preserves. Q resolves. These are dual actors on one field, not enemies.</p><p>Stability is not static balance. Stability is governed asymmetry.</p></div><p>This archive presents the public side of a patent-pending framework authored by Joshua Matthew Carter, independent researcher from Adamsville, Alabama.</p><a class="btn" href="rabbit-hole.html">Follow the asymmetry</a><a class="btn" href="simulator.html">Open simulators</a><a class="btn" href="catalog.html">Release catalog</a><p class="fine">Certain implementation details are proprietary. Recurse Intelligence is an aspirational future research imprint, not an institutional affiliation. Contact: ivybe1337@proton.me · GitHub: @ivybe1337</p></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Razael NEXUS — Standing Wave Inference</title>
+  <meta name="description" content="Technical specification and visualization for the Razael NEXUS model architecture.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #030308;
+      --bg-card: rgba(12, 14, 28, 0.45);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-cyan: #06b6d4;
+      --accent-magenta: #d946ef;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --font-outfit: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(217, 70, 239, 0.05) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: var(--font-outfit);
+      line-height: 1.6;
+      overflow-x: hidden;
+      padding-bottom: 100px;
+    }
+
+    /* Grid layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30px 0;
+      border-bottom: 1px solid var(--border-card);
+      margin-bottom: 60px;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge-experimental {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid var(--accent-amber);
+      color: var(--accent-amber);
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 80px;
+      position: relative;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(to right, #ffffff, #9ca3af);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto 32px auto;
+    }
+
+    /* Interactive Wave Canvas */
+    .thought-field-container {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      background: rgba(6, 10, 26, 0.3);
+      border: 1px solid var(--border-card);
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 80px;
+      backdrop-filter: blur(8px);
+    }
+
+    #thoughtFieldCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .canvas-overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .canvas-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .btn-action {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--accent-red);
+      color: var(--accent-red);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.2s ease;
+      font-family: var(--font-mono);
+    }
+
+    .btn-action:hover {
+      background: var(--accent-red);
+      color: white;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Grid components */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(12px);
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 12px;
+    }
+
+    .card h2 span {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* SQUID Visualizer styles */
+    .squid-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .squid-visualizer {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin: 10px 0;
+    }
+
+    .squid-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .ring-0 { width: 60px; height: 60px; }
+    .ring-1 { width: 90px; height: 90px; }
+    .ring-2 { width: 120px; height: 120px; }
+    .ring-3 { width: 150px; height: 150px; }
+    .ring-4 { width: 180px; height: 180px; }
+    .ring-5 { width: 210px; height: 210px; }
+
+    .squid-ring.active {
+      border-color: var(--accent-cyan);
+      border-style: solid;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+    }
+
+    .tokenizer-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .tokenizer-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .ring-legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .legend-item.active {
+      color: var(--text-main);
+    }
+
+    .legend-item.active .legend-dot {
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    /* Calculator Styles */
+    .calc-row {
+      margin-bottom: 20px;
+    }
+
+    .calc-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .calc-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+    }
+
+    .calc-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-magenta);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .calc-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .calc-toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .calc-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-card);
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .calc-toggle.active {
+      border-color: var(--accent-magenta);
+      background: rgba(217, 70, 239, 0.05);
+    }
+
+    .calc-checkbox {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--text-muted);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: transparent;
+      transition: all 0.2s ease;
+    }
+
+    .calc-toggle.active .calc-checkbox {
+      border-color: var(--accent-magenta);
+      background: var(--accent-magenta);
+      color: white;
+    }
+
+    .vram-display {
+      margin-top: 30px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .vram-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--accent-magenta);
+    }
+
+    .vram-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+    }
+
+    /* Math Spec Card */
+    .spec-card {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 900px) {
+      .spec-card {
+        grid-column: span 1;
+      }
+    }
+
+    .spec-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .spec-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .spec-item {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .spec-item h3 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+    }
+
+    .spec-item p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .spec-math {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--text-main);
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="logo">Razael</div>
+      <div class="badge-experimental">NEXUS v1 (Experimental)</div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>Standing Wave Inference</h1>
+        <p>A departure from sequential token generation. Modeling cognitive states as oscillating, cross-coupled thought streams in a high-dimensional tensor field.</p>
+      </section>
+
+      <!-- Wave Canvas thought field -->
+      <div class="thought-field-container">
+        <canvas id="thoughtFieldCanvas"></canvas>
+        <div class="canvas-overlay">
+          <div class="canvas-title" id="telemetryStatus">Alpha/Beta Oscillatory Thought Field: Stable</div>
+          <button class="btn-action" id="btnContradict">Inject SCN Contradiction</button>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- SQUID Tokenizer visualizer -->
+        <div class="card">
+          <h2>SQUID Tokenizer <span>Ring Registry</span></h2>
+          <div class="squid-container">
+            <div class="squid-visualizer" id="squidVisualizer">
+              <div class="squid-ring ring-0" data-ring="0"></div>
+              <div class="squid-ring ring-1" data-ring="1"></div>
+              <div class="squid-ring ring-2" data-ring="2"></div>
+              <div class="squid-ring ring-3" data-ring="3"></div>
+              <div class="squid-ring ring-4" data-ring="4"></div>
+              <div class="squid-ring ring-5" data-ring="5"></div>
+            </div>
+            <input type="text" class="tokenizer-input" id="tokenizerInput" placeholder="Type text to observe multi-scale ring mapping..." value="Initialize standing wave phase gate.">
+            <div class="ring-legend">
+              <div class="legend-item" id="legend-0"><div class="legend-dot"></div>Char (R0)</div>
+              <div class="legend-item" id="legend-1"><div class="legend-dot"></div>Subword (R1)</div>
+              <div class="legend-item" id="legend-2"><div class="legend-dot"></div>Term (R2)</div>
+              <div class="legend-item" id="legend-3"><div class="legend-dot"></div>Phrase (R3)</div>
+              <div class="legend-item" id="legend-4"><div class="legend-dot"></div>Complex (R4)</div>
+              <div class="legend-item" id="legend-5"><div class="legend-dot"></div>System (R5)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VRAM Calculator -->
+        <div class="card">
+          <h2>Selective Precision <span>VRAM Estimator</span></h2>
+          
+          <div class="calc-row">
+            <div class="calc-label">
+              <span>Mode</span>
+              <span id="valMode" style="font-family: var(--font-mono); color: var(--accent-magenta); font-weight: 600;">Inference</span>
+            </div>
+            <div class="calc-toggle-group" style="margin-top: 5px; margin-bottom: 15px; grid-template-columns: 1fr 1fr;">
+              <div class="calc-toggle active" id="toggleModeInference" style="padding: 8px; justify-content: center;">Inference</div>
+              <div class="calc-toggle" id="toggleModeTraining" style="padding: 8px; justify-content: center;">Training</div>
+            </div>
+          </div>
+
+          <div class="calc-row">
+            <div class="calc-label">
+              <span>Model Parameters</span>
+              <span id="valParams">1.1 B</span>
+            </div>
+            <input type="range" class="calc-slider" id="slideParams" min="120" max="4500" step="50" value="1100">
+          </div>
+
+          <div class="calc-row">
+            <div class="calc-label">
+              <span>Sequence Length</span>
+              <span id="valSeq">2048</span>
+            </div>
+            <input type="range" class="calc-slider" id="slideSeq" min="512" max="8192" step="512" value="2048">
+          </div>
+
+          <div class="calc-row">
+            <div class="calc-label">
+              <span>Batch Size</span>
+              <span id="valBatch">1</span>
+            </div>
+            <input type="range" class="calc-slider" id="slideBatch" min="1" max="128" step="1" value="1">
+          </div>
+
+          <div class="calc-row">
+            <div class="calc-label">
+              <span>Precision</span>
+            </div>
+            <div class="calc-toggle-group" style="margin-top: 5px; grid-template-columns: repeat(4, 1fr); font-size: 0.75rem;">
+              <div class="calc-toggle" id="precFP32" style="padding: 6px; justify-content: center;">FP32</div>
+              <div class="calc-toggle active" id="precBF16" style="padding: 6px; justify-content: center;">BF16</div>
+              <div class="calc-toggle" id="precINT8" style="padding: 6px; justify-content: center;">INT8</div>
+              <div class="calc-toggle" id="precINT4" style="padding: 6px; justify-content: center;">4-Bit</div>
+            </div>
+          </div>
+
+          <!-- Optimizer selection (visible in training mode) -->
+          <div class="calc-row" id="rowOptimizer" style="display: none; margin-top: 20px;">
+            <div class="calc-label">
+              <span>Optimizer State</span>
+            </div>
+            <div class="calc-toggle-group" style="margin-top: 5px; grid-template-columns: repeat(3, 1fr); font-size: 0.75rem;">
+              <div class="calc-toggle active" id="optAdamW" style="padding: 6px; justify-content: center;">AdamW 16b</div>
+              <div class="calc-toggle" id="optAdam8b" style="padding: 6px; justify-content: center;">AdamW 8b</div>
+              <div class="calc-toggle" id="optSGD" style="padding: 6px; justify-content: center;">SGD</div>
+            </div>
+          </div>
+
+          <div class="calc-toggle-group" style="margin-top: 24px; grid-template-columns: 1fr 1fr;">
+            <div class="calc-toggle" id="toggleCheckpoint">
+              <div class="calc-checkbox">✓</div>
+              <div style="font-size: 0.85rem;">Grad Checkpointing</div>
+            </div>
+            <div class="calc-toggle" id="toggleOffload">
+              <div class="calc-checkbox">✓</div>
+              <div style="font-size: 0.85rem;">MoE CPU Offload</div>
+            </div>
+          </div>
+
+          <div class="vram-display">
+            <div class="vram-value" id="vramValue">4.84 GB</div>
+            <div class="vram-label">Estimated Memory Footprint</div>
+          </div>
+        </div>
+
+        <!-- Code/Math Specs -->
+        <div class="card spec-card">
+          <h2>Mathematical Subsystems <span>Model Specifications</span></h2>
+          <div class="spec-list">
+            <div class="spec-item">
+              <h3>Hebbian Graph Transition</h3>
+              <p>Online non-gradient update matrix tracking conceptual bloom-graph transitions.</p>
+              <div class="spec-math">T_t = clamp(T + n * P_t * P_t1^T, -3, 3)</div>
+            </div>
+            <div class="spec-item">
+              <h3>Bilateral Oscillations</h3>
+              <p>Standing wave interference pattern generated by cross-coupled Alpha/Beta GRU units.</p>
+              <div class="spec-math">W_field = PhaseGate(Alpha + Beta * phi)</div>
+            </div>
+            <div class="spec-item">
+              <h3>Belief-State Updates</h3>
+              <p>Active inference belief vectors regulated by momentum-guided prediction errors.</p>
+              <div class="spec-math">B_t = a * B + (1 - a) * err</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Canvas Oscillatory Wave Simulation
+    const canvas = document.getElementById('thoughtFieldCanvas');
+    const ctx = canvas.getContext('2d');
+    let animationId;
+    let width = canvas.width = canvas.offsetWidth;
+    let height = canvas.height = canvas.offsetHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+    });
+
+    let phase = 0;
+    let anomaly = 0;
+    let anomalyRecovery = 1.0;
+
+    function drawWaves() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw background Grid lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.lineWidth = 1;
+      const step = 40;
+      for (let x = 0; x < width; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // Drawing Alpha Wave (Cyan)
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x < width; x++) {
+        const angle = (x / 100) + phase;
+        let y = height / 2 + Math.sin(angle) * 30 * Math.sin(phase * 0.5);
+        if (anomaly > 0) {
+          y += (Math.random() - 0.5) * anomaly * 40;
+        }
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Drawing Beta Wave (Magenta)
+      ctx.strokeStyle = 'rgba(217, 70, 239, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x < width; x++) {
+        const angle = (x / 80) - phase * 1.2;
+        let y = height / 2 + Math.cos(angle) * 25 * Math.cos(phase * 0.3);
+        if (anomaly > 0) {
+          y += (Math.random() - 0.5) * anomaly * 40;
+        }
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Draw Standing Wave Interference (White/Blue overlay)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let x = 0; x < width; x++) {
+        const angleAlpha = (x / 100) + phase;
+        const angleBeta = (x / 80) - phase * 1.2;
+        const yAlpha = Math.sin(angleAlpha) * 30 * Math.sin(phase * 0.5);
+        const yBeta = Math.cos(angleBeta) * 25 * Math.cos(phase * 0.3);
+        
+        let y = height / 2 + (yAlpha + yBeta) * 0.8;
+        if (anomaly > 0) {
+          y += (Math.random() - 0.5) * anomaly * 60;
+        }
+
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Recovery math
+      if (anomaly > 0) {
+        anomaly -= 0.02 * anomalyRecovery;
+        if (anomaly < 0) anomaly = 0;
+      }
+
+      phase += 0.03;
+      animationId = requestAnimationFrame(drawWaves);
+    }
+
+    drawWaves();
+
+    // Contradiction button handler
+    const btnContradict = document.getElementById('btnContradict');
+    const statusText = document.getElementById('telemetryStatus');
+
+    btnContradict.addEventListener('click', () => {
+      anomaly = 1.0;
+      statusText.innerText = "SCN SPIKE TRIGGERED: INJECTING STOCHASTIC NOISE...";
+      statusText.style.color = "var(--accent-red)";
+      
+      setTimeout(() => {
+        statusText.innerText = "Realigning Standing Wave Corridor...";
+        statusText.style.color = "var(--accent-amber)";
+      }, 1000);
+
+      setTimeout(() => {
+        statusText.innerText = "Alpha/Beta Oscillatory Thought Field: Stable";
+        statusText.style.color = "var(--text-muted)";
+      }, 2500);
+    });
+
+
+    // SQUID Ring Tokenizer Simulation
+    const tokenizerInput = document.getElementById('tokenizerInput');
+    const rings = document.querySelectorAll('.squid-ring');
+    const legendItems = document.querySelectorAll('.legend-item');
+
+    function updateSQUID(text) {
+      // Clear active states
+      rings.forEach(r => r.classList.remove('active'));
+      legendItems.forEach(l => l.classList.remove('active'));
+
+      if (!text) return;
+
+      const len = text.length;
+      
+      // Map length/patterns to rings deterministically to simulate SQUID multi-scale routing
+      const activeRings = [];
+      if (len > 0) activeRings.push(0); // Char layer
+      if (len > 5) activeRings.push(1); // Subwords
+      if (len > 12) activeRings.push(2); // Terms
+      if (text.includes(' ') || len > 20) activeRings.push(3); // Phrases
+      if (text.includes('.') || text.includes(',') || len > 35) activeRings.push(4); // Complex
+      if (text.toLowerCase().includes('initialize') || text.toLowerCase().includes('gate') || len > 50) activeRings.push(5); // System
+
+      activeRings.forEach(ringIdx => {
+        const ring = document.querySelector(`.ring-${ringIdx}`);
+        if (ring) ring.classList.add('active');
+        const legend = document.getElementById(`legend-${ringIdx}`);
+        if (legend) legend.classList.add('active');
+      });
+    }
+
+    tokenizerInput.addEventListener('input', (e) => {
+      updateSQUID(e.target.value);
+    });
+
+    updateSQUID(tokenizerInput.value);
+
+
+    // VRAM Estimator Math
+    const slideParams = document.getElementById('slideParams');
+    const valParams = document.getElementById('valParams');
+    const slideSeq = document.getElementById('slideSeq');
+    const valSeq = document.getElementById('valSeq');
+    const slideBatch = document.getElementById('slideBatch');
+    const valBatch = document.getElementById('valBatch');
+
+    // Modes
+    const valMode = document.getElementById('valMode');
+    const toggleModeInference = document.getElementById('toggleModeInference');
+    const toggleModeTraining = document.getElementById('toggleModeTraining');
+    
+    // Precisions
+    const precFP32 = document.getElementById('precFP32');
+    const precBF16 = document.getElementById('precBF16');
+    const precINT8 = document.getElementById('precINT8');
+    const precINT4 = document.getElementById('precINT4');
+
+    // Optimizers
+    const rowOptimizer = document.getElementById('rowOptimizer');
+    const optAdamW = document.getElementById('optAdamW');
+    const optAdam8b = document.getElementById('optAdam8b');
+    const optSGD = document.getElementById('optSGD');
+    
+    // Toggles
+    const toggleCheckpoint = document.getElementById('toggleCheckpoint');
+    const toggleOffload = document.getElementById('toggleOffload');
+    
+    const vramValue = document.getElementById('vramValue');
+
+    const config = {
+      mode: 'inference',
+      params: 1100, // Millions
+      seq: 2048,
+      batch: 1,
+      precision: 'bf16', // 'fp32', 'bf16', 'int8', 'int4'
+      optimizer: 'adamw', // 'adamw', 'adam8b', 'sgd'
+      checkpoint: false,
+      offload: false
+    };
+
+    function setToggleState(el, active) {
+      if (active) el.classList.add('active');
+      else el.classList.remove('active');
+    }
+
+    function selectInGroup(activeId, groupIds) {
+      groupIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (id === activeId) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+    }
+
+    // Toggle Handlers
+    toggleModeInference.addEventListener('click', () => {
+      config.mode = 'inference';
+      valMode.innerText = 'Inference';
+      selectInGroup('toggleModeInference', ['toggleModeInference', 'toggleModeTraining']);
+      rowOptimizer.style.display = 'none';
+      calculateVRAM();
+    });
+
+    toggleModeTraining.addEventListener('click', () => {
+      config.mode = 'training';
+      valMode.innerText = 'Training';
+      selectInGroup('toggleModeTraining', ['toggleModeInference', 'toggleModeTraining']);
+      rowOptimizer.style.display = 'block';
+      calculateVRAM();
+    });
+
+    const precIds = ['precFP32', 'precBF16', 'precINT8', 'precINT4'];
+    precFP32.addEventListener('click', () => { config.precision = 'fp32'; selectInGroup('precFP32', precIds); calculateVRAM(); });
+    precBF16.addEventListener('click', () => { config.precision = 'bf16'; selectInGroup('precBF16', precIds); calculateVRAM(); });
+    precINT8.addEventListener('click', () => { config.precision = 'int8'; selectInGroup('precINT8', precIds); calculateVRAM(); });
+    precINT4.addEventListener('click', () => { config.precision = 'int4'; selectInGroup('precINT4', precIds); calculateVRAM(); });
+
+    const optIds = ['optAdamW', 'optAdam8b', 'optSGD'];
+    optAdamW.addEventListener('click', () => { config.optimizer = 'adamw'; selectInGroup('optAdamW', optIds); calculateVRAM(); });
+    optAdam8b.addEventListener('click', () => { config.optimizer = 'adam8b'; selectInGroup('optAdam8b', optIds); calculateVRAM(); });
+    optSGD.addEventListener('click', () => { config.optimizer = 'sgd'; selectInGroup('optSGD', optIds); calculateVRAM(); });
+
+    toggleCheckpoint.addEventListener('click', () => {
+      config.checkpoint = !config.checkpoint;
+      setToggleState(toggleCheckpoint, config.checkpoint);
+      calculateVRAM();
+    });
+
+    toggleOffload.addEventListener('click', () => {
+      config.offload = !config.offload;
+      setToggleState(toggleOffload, config.offload);
+      calculateVRAM();
+    });
+
+    setToggleState(toggleCheckpoint, config.checkpoint);
+    setToggleState(toggleOffload, config.offload);
+
+    function calculateVRAM() {
+      const N = config.params; // Millions
+      const s = config.seq;
+      const b = config.batch;
+
+      // 1. Weight Precision Bytes
+      let bytesPerWeight = 4.0;
+      if (config.precision === 'bf16') bytesPerWeight = 2.0;
+      if (config.precision === 'int8') bytesPerWeight = 1.0;
+      if (config.precision === 'int4') bytesPerWeight = 0.5;
+
+      // Model Dimensions Heuristics based on parameter count
+      let L = 22;
+      let d_model = 2048;
+      if (N < 250) { L = 12; d_model = 768; }
+      else if (N >= 1500) { L = 40; d_model = 4096; }
+
+      // 2. Weights & Optimizer Memory (GB)
+      let paramGB = 0;
+      if (config.mode === 'inference') {
+        paramGB = (N * bytesPerWeight) / 1024;
+      } else {
+        // Training Mode Memory
+        let weightsGB = (N * bytesPerWeight) / 1024;
+        let gradsGB = (N * bytesPerWeight) / 1024; 
+        
+        let optStateBytes = 0;
+        if (config.optimizer === 'adamw') {
+          optStateBytes = 12.0; // FP32 master weights (4) + FP32 momentum (4) + FP32 variance (4)
+        } else if (config.optimizer === 'adam8b') {
+          optStateBytes = 6.0;  // FP32 master weights (4) + 8-bit momentum (1) + 8-bit variance (1)
+        } else if (config.optimizer === 'sgd') {
+          optStateBytes = 4.0;  // FP32 master weights (4)
+        }
+        let optGB = (N * optStateBytes) / 1024;
+        
+        paramGB = weightsGB + gradsGB + optGB;
+      }
+
+      // MoE CPU Offload reduction
+      if (config.offload) {
+        paramGB = paramGB * 0.4;
+      }
+
+      // 3. KV Cache Memory (Inference only)
+      let kvGB = 0;
+      if (config.mode === 'inference') {
+        // KV Cache = 2 * L * d_model * s * b * bytes_per_weight
+        kvGB = (2 * L * d_model * s * b * bytesPerWeight) / (1024 * 1024 * 1024);
+      }
+
+      // 4. Activation Memory
+      let actGB = 0;
+      if (config.mode === 'inference') {
+        actGB = (s * b * d_model * 2.0) / (1024 * 1024 * 1024);
+      } else {
+        // Training activation memory formula
+        let actBytesPerToken = 34.0 + (5.0 * s) / d_model;
+        let totalActBytes = L * s * b * d_model * actBytesPerToken;
+
+        if (config.checkpoint) {
+          totalActBytes = Math.sqrt(L) * s * b * d_model * 34.0;
+        }
+        actGB = totalActBytes / (1024 * 1024 * 1024);
+      }
+
+      let totalVRAM = paramGB + kvGB + actGB;
+      
+      // Baseline CUDA/Runtime overhead
+      totalVRAM += 0.5;
+
+      vramValue.innerText = totalVRAM.toFixed(2) + " GB";
+    }
+
+    slideParams.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      config.params = val;
+      valParams.innerText = val >= 1000 ? (val / 1000).toFixed(2) + " B" : val + " M";
+      calculateVRAM();
+    });
+
+    slideSeq.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      config.seq = val;
+      valSeq.innerText = val;
+      calculateVRAM();
+    });
+
+    slideBatch.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      config.batch = val;
+      valBatch.innerText = val;
+      calculateVRAM();
+    });
+
+    calculateVRAM();
+  </script>
+</body>
+</html>
