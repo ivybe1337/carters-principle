@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Project Expanse — PDSA Falsification Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080808;--s1:#0e0e0e;--s2:#141414;--s3:#1a1a1a;
+  --b1:#1e1e1e;--b2:#2a2a2a;--b3:#333;
+  --txt:#d4d0c8;--muted:#5a5650;--dim:#2a2620;
+  --g:#4ec97a;--r:#c94e4e;--y:#c9a84e;--b:#4e8ec9;--p:#8e4ec9;--c:#4ec9c9;
+  --acc:#c8a96e;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.5}
+nav{height:40px;display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--b1);background:var(--bg);flex-shrink:0;gap:.8rem;z-index:100;position:relative}
+.logo{font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--acc);font-weight:500;white-space:nowrap}
+.logo span{color:var(--muted)}
+.nav-tag{font-size:.58rem;letter-spacing:.1em;color:var(--muted);border:1px solid var(--b2);padding:.1rem .35rem;white-space:nowrap}
+.nav-r{margin-left:auto;display:flex;gap:.5rem;align-items:center}
+.nav-link{color:var(--muted);text-decoration:none;font-size:.6rem;letter-spacing:.08em;transition:color .15s}
+.nav-link:hover{color:var(--txt)}
+.warn-badge{background:rgba(201,78,78,.08);border:1px solid rgba(201,78,78,.25);color:var(--r);font-size:.56rem;letter-spacing:.1em;padding:.1rem .4rem;white-space:nowrap}
+.shell{display:flex;height:calc(100vh - 40px);overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;background:var(--s1)}
+.sb-sec{border-bottom:1px solid var(--b1);padding:.55rem}
+.sb-lbl{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem}
+.ver-list,.scene-list{display:flex;flex-direction:column;gap:.18rem}
+.ver-btn,.scene-btn{padding:.3rem .45rem;border:1px solid var(--b1);background:transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.65rem;cursor:pointer;text-align:left;transition:all .12s;border-radius:1px;width:100%}
+.ver-btn:hover,.scene-btn:hover{border-color:var(--b2);color:var(--txt)}
+.ver-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(200,169,110,.04)}
+.scene-btn.active{border-color:var(--c);color:var(--c);background:rgba(78,201,201,.03)}
+.ver-sub{font-size:.52rem;color:var(--muted);margin-top:.08rem}
+.ver-btn.active .ver-sub{color:rgba(200,169,110,.45)}
+.eq-box{font-size:.6rem;color:var(--muted);line-height:1.9;padding:.3rem 0}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.tabs{height:30px;display:flex;border-bottom:1px solid var(--b1);background:var(--s1);flex-shrink:0}
+.tab{padding:0 .9rem;border:none;background:transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-right:1px solid var(--b1);transition:all .12s;white-space:nowrap}
+.tab:hover{color:var(--txt)}
+.tab.active{color:var(--txt);background:var(--bg);border-bottom:1px solid var(--bg);margin-bottom:-1px}
+.panels{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.panel{display:none;flex:1;overflow:hidden}
+.panel.active{display:flex;flex-direction:column}
+
+/* CONTROLS */
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;flex:1;overflow-y:auto;align-content:start}
+.cgroup{border-right:1px solid var(--b1);border-bottom:1px solid var(--b1);padding:.6rem}
+.cgroup:nth-child(3n){border-right:none}
+.cg-hdr{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);margin-bottom:.5rem;display:flex;align-items:center;gap:.35rem}
+.cg-tag{font-size:.48rem;color:var(--muted);border:1px solid var(--dim);padding:0 .28rem;letter-spacing:.05em}
+.pr{display:flex;flex-direction:column;margin-bottom:.45rem}
+.pr label{font-size:.58rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:.18rem}
+.pr label .sym{color:var(--c)}
+.pr label .val{color:var(--txt);font-weight:500;min-width:3.2rem;text-align:right}
+input[type=range]{width:100%;-webkit-appearance:none;height:2px;background:var(--b2);border-radius:1px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:8px;height:8px;border-radius:50%;background:var(--acc)}
+input[type=range].rg::-webkit-slider-thumb{background:var(--g)}
+input[type=range].rr::-webkit-slider-thumb{background:var(--r)}
+input[type=range].rb::-webkit-slider-thumb{background:var(--b)}
+input[type=range].ry::-webkit-slider-thumb{background:var(--y)}
+input[type=range].rp::-webkit-slider-thumb{background:var(--p)}
+input[type=range].rc::-webkit-slider-thumb{background:var(--c)}
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem}
+.tog-row label{font-size:.6rem;color:var(--muted)}
+.tog{width:26px;height:13px;background:var(--b2);border:1px solid var(--b3);border-radius:7px;cursor:pointer;position:relative;transition:background .15s;flex-shrink:0}
+.tog.on{background:rgba(78,201,122,.2);border-color:var(--g)}
+.tog::after{content:'';position:absolute;width:9px;height:9px;background:var(--muted);border-radius:50%;top:1px;left:1px;transition:all .15s}
+.tog.on::after{left:14px;background:var(--g)}
+
+/* RUN BAR */
+.run-bar{height:34px;display:flex;align-items:center;gap:.4rem;padding:0 .7rem;border-top:1px solid var(--b1);background:var(--s1);flex-shrink:0}
+.rbtn{padding:.26rem .7rem;border:1px solid;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.06em;cursor:pointer;transition:all .12s;white-space:nowrap}
+.rbtn.prim{border-color:var(--g);color:var(--g)}
+.rbtn.prim:hover{background:rgba(78,201,122,.05)}
+.rbtn.warn{border-color:var(--y);color:var(--y)}
+.rbtn.warn:hover{background:rgba(201,168,78,.05)}
+.rbtn.dang{border-color:var(--r);color:var(--r)}
+.rbtn.dang:hover{background:rgba(201,78,78,.05)}
+.rbtn.neu{border-color:var(--b2);color:var(--muted)}
+.rbtn.neu:hover{color:var(--txt);border-color:var(--b3)}
+.run-info{font-size:.6rem;color:var(--muted);flex:1;margin-left:.3rem}
+.ri-val{color:var(--txt);font-weight:500}
+
+/* VIZ PANEL */
+.viz-wrap{display:flex;flex:1;overflow:hidden}
+.viz-main{flex:1;position:relative;overflow:hidden;background:#030303}
+canvas#vc{position:absolute;inset:0;width:100%;height:100%}
+.viz-ovr{position:absolute;top:.5rem;left:.6rem;font-size:.58rem;color:rgba(255,255,255,.18);pointer-events:none;line-height:1.9}
+.viz-side{width:190px;flex-shrink:0;border-left:1px solid var(--b1);display:flex;flex-direction:column;overflow-y:auto;background:var(--s1)}
+.vs-sec{padding:.55rem;border-bottom:1px solid var(--b1)}
+.vs-lbl{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+
+/* GAUGE */
+.gtrack{height:4px;background:var(--b2);border-radius:2px;position:relative;margin:.35rem 0 .18rem;overflow:visible}
+.gz{position:absolute;top:0;height:100%}
+.gz1{left:0;width:20%;background:rgba(201,78,78,.5);border-radius:2px 0 0 2px}
+.gz2{left:20%;width:5%;background:rgba(201,168,78,.35)}
+.gz3{left:25%;width:20%;background:rgba(78,201,122,.3)}
+.gz4{left:45%;width:7%;background:rgba(201,168,78,.35)}
+.gz5{left:52%;width:48%;background:rgba(201,78,78,.4);border-radius:0 2px 2px 0}
+.gneedle{position:absolute;top:-5px;width:2px;height:14px;background:var(--acc);transform:translateX(-50%);transition:left .08s;z-index:2;border-radius:1px}
+.glabels{display:flex;justify-content:space-between;font-size:.48rem;color:var(--dim)}
+.dval{font-size:1.5rem;text-align:center;margin:.2rem 0;letter-spacing:.04em}
+
+/* MODE GRID */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:.25rem;margin:.2rem 0}
+.mc{background:var(--s2);border:1px solid var(--b1);padding:.28rem;font-size:.58rem}
+.mc .mcl{color:var(--muted);margin-bottom:.15rem;font-size:.5rem}
+.mc .mcbar{height:2px;background:var(--b2);border-radius:1px;margin-top:.18rem;overflow:hidden}
+.mc .mcfill{height:100%;border-radius:1px;transition:width .15s}
+.mc-pp{border-color:rgba(201,78,78,.2)}.mc-pp .mcfill{background:var(--r)}
+.mc-pn{border-color:rgba(78,201,122,.2)}.mc-pn .mcfill{background:var(--g)}
+.mc-np{border-color:rgba(142,78,201,.2)}.mc-np .mcfill{background:var(--p)}
+.mc-nn{border-color:rgba(78,201,201,.2)}.mc-nn .mcfill{background:var(--c)}
+
+/* METRICS */
+.mt{width:100%;border-collapse:collapse}
+.mt tr{border-bottom:1px solid var(--b1)}
+.mt tr:last-child{border-bottom:none}
+.mt td{padding:.22rem .28rem;font-size:.6rem}
+.mt td:first-child{color:var(--muted)}
+.mt td:last-child{color:var(--txt);text-align:right;font-weight:500}
+.ok{color:var(--g)!important}.warn{color:var(--y)!important}.bad{color:var(--r)!important}.ghost{color:var(--b)!important}
+canvas#hc{width:100%;height:56px;display:block}
+
+/* FALSIFICATION */
+.false-grid{flex:1;overflow-y:auto;padding:.8rem;display:grid;grid-template-columns:1fr 1fr;gap:.6rem;align-content:start}
+.claim{border:1px solid var(--b1);background:var(--s1);padding:.7rem}
+.cl-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.cl-id{font-size:.52rem;letter-spacing:.1em;color:var(--muted)}
+.cl-st{font-size:.52rem;padding:.08rem .35rem;border-radius:1px}
+.st-idle{background:rgba(30,30,30,.5);border:1px solid var(--b2);color:var(--muted)}
+.st-pass{background:rgba(78,201,122,.08);border:1px solid rgba(78,201,122,.25);color:var(--g)}
+.st-fail{background:rgba(201,78,78,.08);border:1px solid rgba(201,78,78,.25);color:var(--r)}
+.st-run{background:rgba(201,168,78,.08);border:1px solid rgba(201,168,78,.25);color:var(--y)}
+.cl-claim{font-size:.67rem;color:var(--txt);margin-bottom:.35rem;line-height:1.4}
+.cl-cond{font-size:.6rem;color:var(--muted);font-style:italic;margin-bottom:.3rem;line-height:1.4}
+.cl-cond::before{content:'Falsified if: ';color:var(--r);font-style:normal}
+.cl-res{font-size:.6rem;color:var(--muted);min-height:.8rem}
+.cl-prog{height:2px;background:var(--b2);margin-top:.4rem;overflow:hidden}
+.cl-pfill{height:100%;background:var(--y);transition:width .3s}
+
+/* LOG */
+.log-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.log-bar{height:26px;display:flex;align-items:center;gap:.4rem;padding:0 .6rem;border-bottom:1px solid var(--b1);background:var(--s1);flex-shrink:0}
+.log-bar input{background:var(--s2);border:1px solid var(--b2);color:var(--txt);font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.1rem .35rem;width:110px}
+.log-bar input:focus{outline:none;border-color:var(--acc)}
+.lbtn{padding:.12rem .4rem;border:1px solid var(--b2);background:transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.56rem;cursor:pointer}
+.lbtn:hover{color:var(--txt)}
+.log-scroll{flex:1;overflow-y:auto;padding:.35rem .55rem;font-size:.62rem;line-height:1.7}
+.le{display:flex;gap:.5rem;border-bottom:1px solid rgba(20,20,20,.8);padding:.12rem 0}
+.le-tick{color:var(--dim);min-width:3rem}
+.le-lv{min-width:3.2rem;font-size:.55rem}
+.le-msg{color:var(--txt);flex:1}
+.lok{color:var(--g)}.lwarn{color:var(--y)}.larr{color:var(--b)}.lper{color:var(--p)}.lrup{color:var(--r)}.lsys{color:var(--muted)}
+
+/* EXPORT */
+.exp-wrap{flex:1;overflow-y:auto;padding:.8rem}
+.exp-sec{margin-bottom:1rem}
+.exp-title{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);margin-bottom:.5rem}
+.exp-row{display:flex;align-items:center;justify-content:space-between;padding:.3rem .45rem;border:1px solid var(--b1);background:var(--s1);margin-bottom:.2rem}
+.exp-lbl{font-size:.62rem;color:var(--txt)}
+.exp-desc{font-size:.56rem;color:var(--muted);margin-top:.08rem}
+.exp-btn{padding:.18rem .5rem;border:1px solid var(--b2);background:transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.58rem;cursor:pointer}
+.exp-btn:hover{color:var(--txt);border-color:var(--b3)}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--b2)}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">Project Expanse <span>/ PDSA</span></span>
+  <span class="nav-tag">Falsification Framework</span>
+  <span class="nav-tag" id="ver-tag">OmniPDE</span>
+  <div class="nav-r">
+    <span class="warn-badge">UNRELEASED — INTERNAL ONLY</span>
+    <a href="simulator.html" class="nav-link">← Visual Sim</a>
+    <a href="index.html" class="nav-link">Home</a>
+  </div>
+</nav>
+
+<div class="shell">
+<div class="sidebar">
+  <div class="sb-sec">
+    <div class="sb-lbl">Theory Version</div>
+    <div class="ver-list">
+      <button class="ver-btn active" id="vb-pde" onclick="setVer('pde')">OmniPDE / PDE<div class="ver-sub">P⁺/N⁻ fields · 4-mode · Nexus</div></button>
+      <button class="ver-btn" id="vb-daast" onclick="setVer('daast')">DAAST<div class="ver-sub">A_H / A_L anchors · dual geometry</div></button>
+      <button class="ver-btn" id="vb-v6" onclick="setVer('v6')">RAD v6<div class="ver-sub">Arrest · Genesis · GHOST · BAND</div></button>
+      <button class="ver-btn" id="vb-v7" onclick="setVer('v7')">RAD v7<div class="ver-sub">S_P ∩ M_N · Viewport Q emerges</div></button>
+      <button class="ver-btn" id="vb-v72" onclick="setVer('v72')">RAD v7.2<div class="ver-sub">Zero-friction · measure-bounded</div></button>
+      <button class="ver-btn" id="vb-v73" onclick="setVer('v73')">RAD v7.3<div class="ver-sub">Oracle · soft B.A.N.D. · P(return)</div></button>
+      <button class="ver-btn" id="vb-v8" onclick="setVer('v8')">RAD v8<div class="ver-sub">6D torus · scale tower · dbl inversion</div></button>
+    </div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Scenario</div>
+    <div class="scene-list">
+      <button class="scene-btn active" id="scb-lattice4" onclick="setScene('lattice4')">lattice4</button>
+      <button class="scene-btn" id="scb-rd2d" onclick="setScene('rd2d')">rd2d (reaction-diffusion)</button>
+      <button class="scene-btn" id="scb-ode" onclick="setScene('ode')">coupled ODE</button>
+      <button class="scene-btn" id="scb-sweep" onclick="setScene('sweep')">phase sweep</button>
+      <button class="scene-btn" id="scb-ablation" onclick="setScene('ablation')">ablation study</button>
+      <button class="scene-btn" id="scb-baseline" onclick="setScene('baseline')">baseline compare</button>
+    </div>
+  </div>
+  <div class="sb-sec" style="flex:1;overflow-y:auto">
+    <div class="sb-lbl">Active Equations</div>
+    <div class="eq-box" id="eq-box"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" id="tab-controls" onclick="setTab('controls',this)">Controls</button>
+    <button class="tab" id="tab-viz" onclick="setTab('viz',this)">Visualization</button>
+    <button class="tab" id="tab-false" onclick="setTab('false',this)">Falsification</button>
+    <button class="tab" id="tab-log" onclick="setTab('log',this)">Run Log</button>
+    <button class="tab" id="tab-export" onclick="setTab('export',this)">Export</button>
+  </div>
+
+  <div class="panels">
+
+    <div class="panel active" id="panel-controls">
+      <div class="ctrl-grid" id="ctrl-grid"></div>
+    </div>
+
+    <div class="panel" id="panel-viz">
+      <div class="viz-wrap">
+        <div class="viz-main">
+          <canvas id="vc"></canvas>
+          <div class="viz-ovr" id="viz-ovr"></div>
+        </div>
+        <div class="viz-side">
+          <div class="vs-sec">
+            <div class="vs-lbl">Asymmetry Index δ</div>
+            <div class="gtrack">
+              <div class="gz gz1"></div><div class="gz gz2"></div><div class="gz gz3"></div>
+              <div class="gz gz4"></div><div class="gz gz5"></div>
+              <div class="gneedle" id="gneedle"></div>
+            </div>
+            <div class="glabels"><span>0</span><span>.20</span><span>.35</span><span>.52</span><span>1</span></div>
+            <div class="dval" id="dval">0.3500</div>
+          </div>
+          <div class="vs-sec">
+            <div class="vs-lbl">δ History</div>
+            <canvas id="hc"></canvas>
+          </div>
+          <div class="vs-sec">
+            <div class="vs-lbl">4-Mode Occupancy</div>
+            <div class="mode-grid">
+              <div class="mc mc-pp"><div class="mcl">(P,+1) runaway</div><span id="mc-pp">0.0%</span><div class="mcbar"><div class="mcfill" id="mb-pp" style="width:25%"></div></div></div>
+              <div class="mc mc-pn"><div class="mcl">(P,−1) braking</div><span id="mc-pn">0.0%</span><div class="mcbar"><div class="mcfill" id="mb-pn" style="width:25%"></div></div></div>
+              <div class="mc mc-np"><div class="mcl">(N,+1) collapse</div><span id="mc-np">0.0%</span><div class="mcbar"><div class="mcfill" id="mb-np" style="width:25%"></div></div></div>
+              <div class="mc mc-nn"><div class="mcl">(N,−1) release</div><span id="mc-nn">0.0%</span><div class="mcbar"><div class="mcfill" id="mb-nn" style="width:25%"></div></div></div>
+            </div>
+          </div>
+          <div class="vs-sec">
+            <div class="vs-lbl">Run Metrics</div>
+            <table class="mt" id="mt"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-false">
+      <div class="false-grid" id="false-grid"></div>
+    </div>
+
+    <div class="panel" id="panel-log">
+      <div class="log-wrap">
+        <div class="log-bar">
+          <span style="font-size:.58rem;color:var(--muted)">Filter:</span>
+          <input id="log-filter" placeholder="search…" oninput="renderLog()">
+          <button class="lbtn" onclick="G.logFull=[];renderLog()">Clear</button>
+          <button class="lbtn" onclick="dlLog()">Export</button>
+          <span style="margin-left:auto;font-size:.58rem;color:var(--muted)" id="log-ct">0</span>
+        </div>
+        <div class="log-scroll" id="log-scroll"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-export">
+      <div class="exp-wrap">
+        <div class="exp-sec">
+          <div class="exp-title">Run Artifacts</div>
+          <div class="exp-row"><div><div class="exp-lbl">run.csv</div><div class="exp-desc">tick, delta, oracle, q0–q3, nexus, arrest, perturb, P(return)</div></div><button class="exp-btn" onclick="exportCSV()">Download</button></div>
+          <div class="exp-row"><div><div class="exp-lbl">summary.json</div><div class="exp-desc">params, seed, metrics, version, timestamp, falsification results</div></div><button class="exp-btn" onclick="exportJSON()">Download</button></div>
+          <div class="exp-row"><div><div class="exp-lbl">phase_diagram.png</div><div class="exp-desc">P×N regime map — run SWEEP first</div></div><button class="exp-btn" onclick="exportPNG()">Download</button></div>
+          <div class="exp-row"><div><div class="exp-lbl">transition_matrix.csv</div><div class="exp-desc">Mode transitions qᵢ→qⱼ frequency table</div></div><button class="exp-btn" onclick="exportTM()">Download</button></div>
+        </div>
+        <div class="exp-sec">
+          <div class="exp-title">Falsification Report</div>
+          <div class="exp-row"><div><div class="exp-lbl">falsification_report.txt</div><div class="exp-desc">All claims, conditions, pass/fail, supporting data</div></div><button class="exp-btn" onclick="exportFalse()">Download</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panels -->
+
+  <div class="run-bar">
+    <button class="rbtn prim" id="play-btn" onclick="toggleRun()">▶ RUN</button>
+    <button class="rbtn neu" onclick="stepOnce()">STEP</button>
+    <button class="rbtn warn" onclick="doSweep()">SWEEP</button>
+    <button class="rbtn dang" onclick="hardReset()">RESET</button>
+    <span class="run-info">
+      tick: <span class="ri-val" id="ri-tick">0</span> &nbsp;|&nbsp;
+      δ: <span class="ri-val" id="ri-d" style="color:var(--g)">0.3500</span> &nbsp;|&nbsp;
+      <span id="ri-st">READY</span> &nbsp;|&nbsp;
+      events: <span class="ri-val" id="ri-ev">0</span>
+    </span>
+    <span style="margin-left:auto;font-size:.58rem;color:var(--muted)" id="seed-lbl">seed: 42</span>
+  </div>
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+// ══════════════════════════════════════════════════
+//  PROJECT EXPANSE — PDSA FALSIFICATION FRAMEWORK
+//  Every mechanism exposed. Deterministic. Exportable.
+// ══════════════════════════════════════════════════
+
+// ── VERSION REGISTRY ──────────────────────────────
+const VER = {
+  pde:{
+    name:'OmniPDE / PDE', tag:'OmniPDE',
+    eqs:['∂ₜP⁺ = Dₚ∇²P⁺ + Sₚ − Rₚ','∂ₜN⁻ = D_N∇²N⁻ + S_N − R_N','Δ(x,t) = |P⁺ − N⁻|','δ = mean(Δ)/Δ_max','Nexus: 0 < Δ < Δ_crit','Modes: (b,s) ∈ {P,N}×{+1,−1}'],
+    groups:[
+      {g:'Field Parameters',tag:'FIELD',items:[
+        {id:'Dp',sym:'Dₚ',lbl:'P-field diffusion',min:0,max:2,step:.01,def:.5,r:'rb'},
+        {id:'Dn',sym:'D_N',lbl:'N-field diffusion',min:0,max:2,step:.01,def:.5,r:'rb'},
+        {id:'Sp',sym:'Sₚ',lbl:'P source rate',min:0,max:2,step:.01,def:.8,r:'rg'},
+        {id:'Sn',sym:'S_N',lbl:'N source rate',min:0,max:2,step:.01,def:.6,r:'rr'},
+        {id:'Rp',sym:'Rₚ',lbl:'P removal rate',min:0,max:2,step:.01,def:.4,r:'ry'},
+        {id:'Rn',sym:'R_N',lbl:'N removal rate',min:0,max:2,step:.01,def:.35,r:'ry'},
+      ]},
+      {g:'Nexus Parameters',tag:'NEXUS',items:[
+        {id:'Dcrit',sym:'Δ_crit',lbl:'Nexus threshold',min:.01,max:1,step:.01,def:.3,r:'rc'},
+        {id:'nlo',sym:'δ_lo',lbl:'BAND lower',min:0,max:.4,step:.01,def:.05,r:'rp'},
+        {id:'nhi',sym:'δ_hi',lbl:'BAND upper',min:.3,max:1,step:.01,def:.52,r:'rp'},
+      ]},
+      {g:'Higher-Order Modes',tag:'4-MODE',items:[
+        {id:'kpp',sym:'κ(P,+1)',lbl:'Pot-Pot gain (runaway)',min:0,max:3,step:.01,def:.8,r:'rr'},
+        {id:'kpn',sym:'κ(P,−1)',lbl:'Neg-Pot gain (brake)',min:0,max:3,step:.01,def:.7,r:'rg'},
+        {id:'knp',sym:'κ(N,+1)',lbl:'Pot-Neg gain (collapse)',min:0,max:3,step:.01,def:.6,r:'rp'},
+        {id:'knn',sym:'κ(N,−1)',lbl:'Neg-Neg gain (release)',min:0,max:3,step:.01,def:.5,r:'rc'},
+      ]},
+      {g:'Simulation',tag:'SIM',items:[
+        {id:'seed',sym:'ζ',lbl:'Random seed',min:0,max:9999,step:1,def:42,r:''},
+        {id:'dt',sym:'Δt',lbl:'Time step',min:.001,max:.1,step:.001,def:.01,r:''},
+        {id:'nx',sym:'N_x',lbl:'Grid size',min:8,max:128,step:1,def:64,r:''},
+        {id:'steps',sym:'T',lbl:'Steps per run',min:100,max:50000,step:100,def:2000,r:''},
+      ]},
+      {g:'Toggles',tag:'FLAGS',togs:[
+        {id:'t_coupling',lbl:'Field coupling',def:true},
+        {id:'t_diffusion',lbl:'Diffusion enabled',def:true},
+        {id:'t_nexus',lbl:'Nexus classification',def:true},
+        {id:'t_4mode',lbl:'4-mode tracking',def:true},
+      ]},
+    ],
+  },
+  daast:{
+    name:'DAAST', tag:'DAAST',
+    eqs:['dP/dt = f(P,N) − A_H·φ_H(P)','dN/dt = g(P,N) − A_L·φ_L(N)','Stable ⟺ A_H > 0 AND A_L > 0','Collapse if A_H = 0','Diverge if A_L = 0','δ = (P−N)/(P+N)'],
+    groups:[
+      {g:'State Variables',tag:'STATE',items:[
+        {id:'P0',sym:'P₀',lbl:'Initial P',min:0,max:2,step:.01,def:.8,r:'rg'},
+        {id:'N0',sym:'N₀',lbl:'Initial N',min:0,max:2,step:.01,def:.5,r:'rr'},
+        {id:'fp',sym:'f(·)',lbl:'P drive rate',min:0,max:2,step:.01,def:.3,r:'rg'},
+        {id:'gn',sym:'g(·)',lbl:'N drive rate',min:0,max:2,step:.01,def:.25,r:'rr'},
+      ]},
+      {g:'Dimensional Anchors',tag:'ANCHORS',items:[
+        {id:'AH',sym:'A_H',lbl:'High-dim anchor strength',min:0,max:3,step:.01,def:1.0,r:'rb'},
+        {id:'AL',sym:'A_L',lbl:'Low-dim anchor strength',min:0,max:3,step:.01,def:1.0,r:'rc'},
+        {id:'phH',sym:'φ_H',lbl:'H-anchor expansion resist',min:0,max:3,step:.01,def:.8,r:'rb'},
+        {id:'phL',sym:'φ_L',lbl:'L-anchor collapse resist',min:0,max:3,step:.01,def:.8,r:'rc'},
+      ]},
+      {g:'Simulation',tag:'SIM',items:[
+        {id:'seed',sym:'ζ',lbl:'Random seed',min:0,max:9999,step:1,def:42,r:''},
+        {id:'dt',sym:'Δt',lbl:'Time step',min:.001,max:.1,step:.001,def:.01,r:''},
+        {id:'steps',sym:'T',lbl:'Steps',min:100,max:50000,step:100,def:2000,r:''},
+        {id:'noise',sym:'ε',lbl:'Noise floor',min:0,max:.2,step:.001,def:.01,r:'ry'},
+      ]},
+      {g:'Toggles',tag:'FLAGS',togs:[
+        {id:'t_AH',lbl:'High anchor active',def:true},
+        {id:'t_AL',lbl:'Low anchor active',def:true},
+        {id:'t_noise',lbl:'Noise injection',def:true},
+      ]},
+    ],
+  },
+  v6:{
+    name:'RAD v6', tag:'RAD-v6',
+    eqs:['δ = (P − N) / (P + N)','Arrest Gate: δ > δ_hi → n.α freeze','Genesis Gate: δ < δ_lo → n.ω jitter','GHOST: arrest + χ re-entry angle','B.A.N.D.: δ_lo ≤ δ ≤ δ_hi'],
+    groups:[
+      {g:'P / N Operators',tag:'P/N',items:[
+        {id:'P',sym:'P',lbl:'Potentiation',min:.01,max:1,step:.01,def:.65,r:'rg'},
+        {id:'N',sym:'N',lbl:'Negation',min:.01,max:1,step:.01,def:.42,r:'rr'},
+        {id:'Pdot',sym:'Ṗ',lbl:'P rate of change',min:-1,max:1,step:.01,def:.05,r:'rg'},
+        {id:'Ndot',sym:'Ṅ',lbl:'N rate of change',min:-1,max:1,step:.01,def:.03,r:'rr'},
+      ]},
+      {g:'B.A.N.D.',tag:'BAND',items:[
+        {id:'blo',sym:'δ_lo',lbl:'Lower BAND boundary',min:0,max:.4,step:.01,def:.20,r:'ry'},
+        {id:'bhi',sym:'δ_hi',lbl:'Upper BAND boundary',min:.3,max:1,step:.01,def:.52,r:'ry'},
+        {id:'btgt',sym:'δ★',lbl:'Target δ',min:.1,max:.6,step:.01,def:.35,r:'rc'},
+      ]},
+      {g:'Gate Mechanisms',tag:'GATES',items:[
+        {id:'arr_str',sym:'α',lbl:'Arrest strength',min:0,max:1,step:.01,def:1.0,r:'rb'},
+        {id:'gen_eps',sym:'ε_ω',lbl:'Genesis jitter σ',min:0,max:.5,step:.001,def:.05,r:'rp'},
+        {id:'ghost_chi',sym:'χ',lbl:'GHOST re-entry angle',min:0,max:1,step:.01,def:.7,r:'rb'},
+        {id:'rec_r',sym:'r',lbl:'Recovery rate to BAND',min:0,max:2,step:.01,def:.3,r:'rc'},
+      ]},
+      {g:'Simulation',tag:'SIM',items:[
+        {id:'seed',sym:'ζ',lbl:'Seed',min:0,max:9999,step:1,def:42,r:''},
+        {id:'dt',sym:'Δt',lbl:'Δt',min:.001,max:.1,step:.001,def:.01,r:''},
+        {id:'steps',sym:'T',lbl:'Steps',min:100,max:50000,step:100,def:2000,r:''},
+      ]},
+      {g:'Toggles',tag:'FLAGS',togs:[
+        {id:'t_arrest',lbl:'Arrest gate',def:true},
+        {id:'t_genesis',lbl:'Genesis gate',def:true},
+        {id:'t_ghost',lbl:'GHOST protocol',def:true},
+        {id:'t_recovery',lbl:'Auto-recovery to BAND',def:true},
+      ]},
+    ],
+  },
+  v7:{
+    name:'RAD v7', tag:'RAD-v7',
+    eqs:['S_{k+1} = S_P ∩ M_N','δ = μ(S_P ∩ M_N) / μ(S_P)','Viewport Q: active rendering seam','BAND nominal: 0.25 ≤ δ ≤ 0.45','Arrest: δ > 0.52 → n.α','Genesis: δ < 0.20 → n.ω'],
+    groups:[
+      {g:'Set-Theoretic Operators',tag:'SETS',items:[
+        {id:'P',sym:'P',lbl:'Potentiation field',min:.01,max:1,step:.01,def:.65,r:'rg'},
+        {id:'N',sym:'N',lbl:'Negation field',min:.01,max:1,step:.01,def:.42,r:'rr'},
+        {id:'mu_sp',sym:'μ(Sₚ)',lbl:'Potential set measure',min:.01,max:1,step:.01,def:.7,r:'rg'},
+        {id:'mu_mn',sym:'μ(Mₙ)',lbl:'Persistence mask measure',min:.01,max:1,step:.01,def:.6,r:'rr'},
+      ]},
+      {g:'Viewport',tag:'Q-SEAM',items:[
+        {id:'Q',sym:'Q',lbl:'Viewport scale',min:.05,max:1,step:.01,def:.5,r:'rc'},
+        {id:'Qres',sym:'Q_r',lbl:'Viewport resolution',min:.1,max:1,step:.01,def:.8,r:'rc'},
+        {id:'Qadj',sym:'Q_adj',lbl:'Adjacent scale bleed',min:0,max:.5,step:.01,def:.1,r:'rc'},
+      ]},
+      {g:'B.A.N.D.',tag:'BAND',items:[
+        {id:'blo',sym:'δ_lo',lbl:'Corridor lower',min:0,max:.35,step:.01,def:.20,r:'ry'},
+        {id:'bhi',sym:'δ_hi',lbl:'Corridor upper',min:.3,max:1,step:.01,def:.52,r:'ry'},
+        {id:'nlo',sym:'δ_nom_lo',lbl:'Nominal lower',min:0,max:.4,step:.01,def:.25,r:'rc'},
+        {id:'nhi',sym:'δ_nom_hi',lbl:'Nominal upper',min:.3,max:.6,step:.01,def:.45,r:'rc'},
+        {id:'btgt',sym:'δ★',lbl:'Target δ',min:.1,max:.6,step:.01,def:.35,r:'rc'},
+      ]},
+      {g:'Gates',tag:'GATES',items:[
+        {id:'arr_str',sym:'α',lbl:'Arrest strength',min:0,max:1,step:.01,def:1.0,r:'rb'},
+        {id:'gen_eps',sym:'ε',lbl:'Genesis perturbation',min:0,max:.2,step:.001,def:.05,r:'rp'},
+      ]},
+      {g:'Simulation',tag:'SIM',items:[
+        {id:'seed',sym:'ζ',lbl:'Seed',min:0,max:9999,step:1,def:42,r:''},
+        {id:'dt',sym:'Δt',lbl:'Δt',min:.001,max:.1,step:.001,def:.01,r:''},
+        {id:'steps',sym:'T',lbl:'Steps',min:100,max:50000,step:100,def:2000,r:''},
+      ]},
+      {g:'Toggles',tag:'FLAGS',togs:[
+        {id:'t_vp',lbl:'Viewport Q active',def:true},
+        {id:'t_arrest',lbl:'Arrest gate',def:true},
+        {id:'t_genesis',lbl:'Genesis gate',def:true},
+        {id:'t_setop',lbl:'Set-theoretic mode',def:true},
+      ]},
+    ],
+  },
+  v72:{
+    name:'RAD v7.2', tag:'RAD-v7.2',
+    eqs:['δ = μ(S_P ∩ M_N) / μ(S_P)','W_rejected = 0  (zero friction)','A_H: rupture ceiling (geometric)','A_L: stasis floor (trigger coord)','τ = f(δ, dδ/dt, A_H, A_L)','GHOST dwell + optimal re-entry'],
+    groups:[
+      {g:'Operators',tag:'OPS',items:[
+        {id:'P',sym:'P',lbl:'Potentiation',min:.01,max:1,step:.01,def:.65,r:'rg'},
+        {id:'N',sym:'N',lbl:'Negation',min:.01,max:1,step:.01,def:.42,r:'rr'},
+        {id:'mu_sp',sym:'μ(Sₚ)',lbl:'Potential set measure',min:.01,max:1,step:.01,def:.7,r:'rg'},
+        {id:'mu_mn',sym:'μ(Mₙ)',lbl:'Mask measure',min:.01,max:1,step:.01,def:.6,r:'rr'},
+      ]},
+      {g:'DAAST Anchors',tag:'ANCHORS',items:[
+        {id:'AH',sym:'A_H',lbl:'High anchor (rupture ceil)',min:0,max:2,step:.01,def:.52,r:'rb'},
+        {id:'AL',sym:'A_L',lbl:'Low anchor (stasis floor)',min:0,max:1,step:.01,def:.20,r:'rc'},
+        {id:'AH_hard',sym:'A_H★',lbl:'Hard upper terminal',min:0,max:2,step:.01,def:.65,r:'rb'},
+        {id:'AL_hard',sym:'A_L★',lbl:'Hard lower terminal',min:0,max:.3,step:.01,def:.05,r:'rc'},
+      ]},
+      {g:'Oracle / Forecast',tag:'ORACLE',items:[
+        {id:'ok',sym:'k',lbl:'Return decay rate',min:.1,max:10,step:.1,def:3.0,r:'ry'},
+        {id:'tau_w',sym:'τ_w',lbl:'Forecast window (ticks)',min:1,max:200,step:1,def:20,r:'ry'},
+        {id:'gh_dwell',sym:'t_α',lbl:'GHOST min dwell time',min:1,max:100,step:1,def:5,r:'rb'},
+        {id:'gen_burst',sym:'b_ω',lbl:'Genesis burst count',min:1,max:20,step:1,def:3,r:'rp'},
+      ]},
+      {g:'Simulation',tag:'SIM',items:[
+        {id:'seed',sym:'ζ',lbl:'Seed',min:0,max:9999,step:1,def:42,r:''},
+        {id:'dt',sym:'Δt',lbl:'Δt',min:.001,max:.1,step:.001,def:.01,r:''},
+        {id:'steps',sym:'T',lbl:'Steps',min:100,max:50000,step:100,def:2000,r:''},
+      ]},
+      {g:'Toggles',tag:'FLAGS',togs:[
+        {id:'t_zf',lbl:'Zero-friction mode',def:true},
+        {id:'t_oracle',lbl:'Oracle forecast',def:true},
+        {id:'t_ghost',lbl:'GHOST protocol',def:true},
+        {id:'t_genesis',lbl:'Genesis gate',def:true},
+        {id:'t_hard',lbl:'Hard terminal stops',def:true},
+      ]},
+    ],
+  },
+  v73:{
+    name:'RAD v7.3', tag:'RAD-v7.3',
+    eqs:['δ = μ(S_P ∩ M_N) / μ(S_P)','P(return) = exp(−k|δ − δ★|)','Nominal: 0.25 ≤ δ ≤ 0.45','Corridor: 0.20 ≤ δ ≤ 0.52','A_H high excursion → GHOST+re-entry','A_L low excursion → Genesis ignition'],
+    groups:[
+      {g:'Operators',tag:'OPS',items:[
+        {id:'P',sym:'P',lbl:'Potentiation',min:.01,max:1,step:.01,def:.65,r:'rg'},
+        {id:'N',sym:'N',lbl:'Negation',min:.01,max:1,step:.01,def:.42,r:'rr'},
+        {id:'Q',sym:'Q',lbl:'Viewport',min:.05,max:1,step:.01,def:.5,r:'rc'},
+      ]},
+      {g:'Reconciled B.A.N.D.',tag:'BAND',items:[
+        {id:'nlo',sym:'δ_nom_lo',lbl:'Nominal lower',min:0,max:.4,step:.01,def:.25,r:'rc'},
+        {id:'nhi',sym:'δ_nom_hi',lbl:'Nominal upper',min:.3,max:.6,step:.01,def:.45,r:'rc'},
+        {id:'blo',sym:'δ_cor_lo',lbl:'Corridor lower',min:0,max:.35,step:.01,def:.20,r:'ry'},
+        {id:'bhi',sym:'δ_cor_hi',lbl:'Corridor upper',min:.3,max:1,step:.01,def:.52,r:'ry'},
+        {id:'btgt',sym:'δ★',lbl:'Target δ',min:.1,max:.6,step:.01,def:.35,r:'rc'},
+      ]},
+      {g:'Oracle Parameters',tag:'ORACLE',items:[
+        {id:'ok',sym:'k',lbl:'Return exp decay',min:.1,max:20,step:.1,def:4.0,r:'ry'},
+        {id:'osig',sym:'σ',lbl:'Forecast uncertainty',min:.01,max:.5,step:.01,def:.1,r:'ry'},
+        {id:'pth',sym:'P_th',lbl:'Intervention threshold',min:0,max:1,step:.01,def:.3,r:'ry'},
+      ]},
+      {g:'Anchor Parameters',tag:'ANCHORS',items:[
+        {id:'AH',sym:'A_H',lbl:'High anchor strength',min:0,max:3,step:.01,def:1.0,r:'rb'},
+        {id:'AL',sym:'A_L',lbl:'Low anchor strength',min:0,max:3,step:.01,def:1.0,r:'rc'},
+        {id:'gh_dur',sym:'t_α',lbl:'GHOST arrest duration',min:1,max:200,step:1,def:10,r:'rb'},
+        {id:'gn_n',sym:'n_ω',lbl:'Genesis burst count',min:1,max:30,step:1,def:5,r:'rp'},
+        {id:'gn_eps',sym:'ε_ω',lbl:'Genesis jitter σ',min:.001,max:.5,step:.001,def:.05,r:'rp'},
+      ]},
+      {g:'Simulation',tag:'SIM',items:[
+        {id:'seed',sym:'ζ',lbl:'Seed',min:0,max:9999,step:1,def:42,r:''},
+        {id:'dt',sym:'Δt',lbl:'Δt',min:.001,max:.1,step:.001,def:.01,r:''},
+        {id:'steps',sym:'T',lbl:'Steps',min:100,max:50000,step:100,def:2000,r:''},
+      ]},
+      {g:'Toggles',tag:'FLAGS',togs:[
+        {id:'t_oracle',lbl:'Oracle active',def:true},
+        {id:'t_ghost',lbl:'GHOST protocol',def:true},
+        {id:'t_genesis',lbl:'Genesis gate',def:true},
+        {id:'t_softband',lbl:'Soft BAND (recoverable)',def:true},
+        {id:'t_vp',lbl:'Viewport Q',def:true},
+      ]},
+    ],
+  },
+  v8:{
+    name:'RAD v8', tag:'RAD-v8',
+    eqs:['Ψ = (S_P, M_N, Q, A_H, A_L, ε)','Torus: r²=(R+a·cosθ)²+a²·sin²θ','Scale invariance: δ(N) ≡ δ(N+1)','Double inversion: n.ω ↔ n.α','Viewport matrix: Q resolves N±1','Anchor fold: d_3D≫0, d_6D=0'],
+    groups:[
+      {g:'6D State Ψ',tag:'Ψ',items:[
+        {id:'P',sym:'P',lbl:'Potentiation',min:.01,max:1,step:.01,def:.65,r:'rg'},
+        {id:'N',sym:'N',lbl:'Negation',min:.01,max:1,step:.01,def:.42,r:'rr'},
+        {id:'Q',sym:'Q',lbl:'Viewport',min:.05,max:1,step:.01,def:.5,r:'rc'},
+        {id:'AH',sym:'A_H',lbl:'High anchor',min:0,max:2,step:.01,def:.52,r:'rb'},
+        {id:'AL',sym:'A_L',lbl:'Low anchor',min:0,max:1,step:.01,def:.20,r:'rc'},
+        {id:'eps',sym:'ε',lbl:'Noise floor',min:0,max:.2,step:.001,def:.01,r:'ry'},
+      ]},
+      {g:'Torus Geometry',tag:'6D',items:[
+        {id:'tR',sym:'R',lbl:'Major radius',min:.1,max:5,step:.01,def:1.0,r:'rb'},
+        {id:'ta',sym:'a',lbl:'Minor radius',min:.01,max:2,step:.01,def:.4,r:'rb'},
+        {id:'ttheta',sym:'θ₀',lbl:'Initial angle',min:0,max:6.28,step:.01,def:0,r:'rb'},
+      ]},
+      {g:'Scale Tower',tag:'SCALE',items:[
+        {id:'sc_n',sym:'N_scale',lbl:'Active scale layer',min:0,max:10,step:1,def:3,r:'rp'},
+        {id:'sc_adj',sym:'N±1',lbl:'Adjacent scale bleed',min:0,max:1,step:.01,def:.15,r:'rp'},
+        {id:'sc_inv',sym:'σ_inv',lbl:'Scale invariance tol',min:0,max:.5,step:.01,def:.05,r:'rp'},
+      ]},
+      {g:'Double Inversion',tag:'2×INV',items:[
+        {id:'inv_sym',sym:'χ_sym',lbl:'Inversion symmetry tol',min:0,max:1,step:.01,def:.02,r:'ry'},
+        {id:'bb_thr',sym:'δ_bb',lbl:'n.ω release threshold',min:0,max:.1,step:.001,def:.001,r:'ry'},
+      ]},
+      {g:'Simulation',tag:'SIM',items:[
+        {id:'seed',sym:'ζ',lbl:'Seed',min:0,max:9999,step:1,def:42,r:''},
+        {id:'dt',sym:'Δt',lbl:'Δt',min:.001,max:.1,step:.001,def:.01,r:''},
+        {id:'steps',sym:'T',lbl:'Steps',min:100,max:50000,step:100,def:2000,r:''},
+      ]},
+      {g:'Toggles',tag:'FLAGS',togs:[
+        {id:'t_torus',lbl:'6D torus geometry',def:true},
+        {id:'t_scaleinv',lbl:'Scale invariance check',def:true},
+        {id:'t_dblinv',lbl:'Double inversion proof',def:true},
+        {id:'t_oracle',lbl:'Oracle active',def:true},
+        {id:'t_ghost',lbl:'GHOST protocol',def:true},
+        {id:'t_genesis',lbl:'Genesis gate',def:true},
+      ]},
+    ],
+  },
+};
+
+const CLAIMS = {
+  pde:[
+    {id:'F-PDE-1',claim:'Nexus Zone is a persistent attractor, not transient.',cond:'Nexus occupancy < 10% for the full run.',test:'noc'},
+    {id:'F-PDE-2',claim:'Δ=0 produces structural collapse, not stability.',cond:'System at Δ≈0 maintains structure for > 100 ticks.',test:'zdcol'},
+    {id:'F-PDE-3',claim:'Both P and N required. Removing either destroys Nexus.',cond:'Ablation of one field still produces Nexus occ > 20%.',test:'abl'},
+    {id:'F-PDE-4',claim:'4-mode operators produce distinct non-uniform dynamics.',cond:'Mode transition matrix is uniform (no preferential paths).',test:'mtr'},
+    {id:'F-PDE-5',claim:'System outperforms pure diffusion in structure retention.',cond:'Structure metric ≤ pure diffusion baseline.',test:'base'},
+    {id:'F-PDE-6',claim:'Nexus emerges at bounded asymmetry, not at equilibrium.',cond:'Nexus occupancy peaks at Δ=0.',test:'nd'},
+  ],
+  daast:[
+    {id:'F-DA-1',claim:'Stability requires BOTH anchors. Single anchor always fails.',cond:'System with only A_H or only A_L stable for > 500 ticks.',test:'anch_abl'},
+    {id:'F-DA-2',claim:'A_H=0 causes unbounded expansion.',cond:'P(t) remains bounded with A_H=0.',test:'ah0'},
+    {id:'F-DA-3',claim:'A_L=0 causes collapse to zero.',cond:'N(t) does not collapse with A_L=0.',test:'al0'},
+    {id:'F-DA-4',claim:'Corridor width proportional to A_H × A_L product.',cond:'Corridor width does not scale with anchor product.',test:'anchscale'},
+  ],
+  v6:[
+    {id:'F-V6-1',claim:'Arrest gate prevents rupture without destroying system.',cond:'Post-arrest δ fails to return to BAND within 3× arrest dur.',test:'arr_rec'},
+    {id:'F-V6-2',claim:'Genesis gate rescues system from stasis.',cond:'Post-genesis δ fails to rise above δ_lo within 50 ticks.',test:'gen_rec'},
+    {id:'F-V6-3',claim:'GHOST re-entry finds better trajectory than no-arrest.',cond:'Post-GHOST χ metric ≤ no-arrest baseline.',test:'ghost_opt'},
+    {id:'F-V6-4',claim:'System persists indefinitely within BAND.',cond:'System exits BAND permanently within T steps.',test:'band_pers'},
+  ],
+  v7:[
+    {id:'F-V7-1',claim:'Set intersection produces different dynamics than force subtraction.',cond:'δ curves identical to v6 force model at same P/N.',test:'setop_v_force'},
+    {id:'F-V7-2',claim:'Viewport Q modulates observable δ without changing underlying state.',cond:'Q scaling has no effect on δ trajectory.',test:'vp_mod'},
+    {id:'F-V7-3',claim:'Rejected states incur zero work (zero friction axiom).',cond:'Energy expenditure on rejected states > 0.',test:'zf'},
+    {id:'F-V7-4',claim:'BAND persists across Q scale changes.',cond:'BAND boundaries shift as function of Q.',test:'band_scale'},
+  ],
+  v72:[
+    {id:'F-V72-1',claim:'Oracle P(return) predicts re-entry before it occurs.',cond:'Oracle forecast fails to precede actual re-entry.',test:'oracle_fc'},
+    {id:'F-V72-2',claim:'Zero-friction filtration is more efficient than force model.',cond:'v7.2 requires more ops/step than v6.',test:'eff'},
+    {id:'F-V72-3',claim:'Geometric anchors produce cleaner BAND than soft policies.',cond:'Anchor geometry produces same/wider corridor variance.',test:'anch_v_pol'},
+  ],
+  v73:[
+    {id:'F-V73-1',claim:'Soft BAND allows recovery from corridor breach.',cond:'System never recovers from δ outside [0.20, 0.52].',test:'soft_rec'},
+    {id:'F-V73-2',claim:'Oracle P(return)=exp(−k|δ−δ★|) is calibrated.',cond:'Oracle P > 0.9 when actual return rate < 50%.',test:'oracle_cal'},
+    {id:'F-V73-3',claim:'High/low excursion require asymmetric responses.',cond:'Same intervention equally effective for both extremes.',test:'asym_resp'},
+  ],
+  v8:[
+    {id:'F-V8-1',claim:'δ is scale-invariant across Scale Tower layers.',cond:'δ(N) differs from δ(N+1) beyond invariance tolerance.',test:'scale_inv'},
+    {id:'F-V8-2',claim:'Double inversion: n.ω and n.α are topologically equivalent.',cond:'n.ω signature differs from inverted n.α beyond noise.',test:'dbl_inv'},
+    {id:'F-V8-3',claim:'Torus geometry produces bounded non-repeating trajectories.',cond:'Trajectory terminates or exactly repeats within T steps.',test:'torus_traj'},
+    {id:'F-V8-4',claim:'Big Bang n.ω release mechanistically identical to Genesis Gate.',cond:'BB release signature statistically distinct from Genesis.',test:'bb_gen'},
+  ],
+};
+
+// ── ENGINE STATE ──────────────────────────────────
+let G = {
+  ver:'pde', scene:'lattice4',
+  running:false, tick:0, events:0,
+  delta:0.35, history:[], runData:[],
+  params:{}, togs:{},
+  modes:{pp:.25,pn:.25,np:.25,nn:.25},
+  arrest:false, perturb:false,
+  nexusOcc:0, logFull:[],
+  transMatrix:[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+  prevMode:0, sweepResults:null,
+  claimRes:{}, seed:42, rng:null,
+};
+
+function mkRng(s){ let r=s>>>0; return ()=>{ r=(Math.imul(1664525,r)+1013904223)>>>0; return r/4294967296; }; }
+function clamp(v,lo,hi){ return v<lo?lo:v>hi?hi:v; }
+
+function gp(id){ return G.params[id]!==undefined?G.params[id]:defParam(id); }
+function gt(id){ return G.togs[id]!==undefined?G.togs[id]:true; }
+function defParam(id){
+  for(const g of (VER[G.ver]?.groups||[])){ if(g.items){ const i=g.items.find(x=>x.id===id); if(i) return i.def; } }
+  return 0;
+}
+
+function computeDelta(t){
+  const rnd=G.rng, n=rnd()*.018-.009;
+  switch(G.ver){
+    case 'pde':{
+      const Sp=gp('Sp'),Sn=gp('Sn'),Rp=gp('Rp'),Rn=gp('Rn'),Dp=gp('Dp'),Dn=gp('Dn'),Dc=gp('Dcrit');
+      const P=clamp(.5+(Sp-Rp)*.3+Math.sin(t*.011)*Dp*.15,.01,1);
+      const N=clamp(.4+(Sn-Rn)*.3+Math.cos(t*.013)*Dn*.15,.01,1);
+      return clamp(Math.abs(P-N)/Dc+n,.001,.999);
+    }
+    case 'daast':{
+      const P0=gp('P0'),N0=gp('N0'),fp=gp('fp'),gn=gp('gn');
+      const AH=gt('t_AH')?gp('AH'):0, AL=gt('t_AL')?gp('AL'):0;
+      const P=clamp(P0+fp*Math.sin(t*.02)-AH*gp('phH')*.1*t/(t+100),.01,3);
+      const N=clamp(N0+gn*Math.cos(t*.025)-AL*gp('phL')*.08*t/(t+100),.01,3);
+      return clamp(.5+(P-N)/(P+N+1e-9)*.45+n,.001,.999);
+    }
+    case 'v6':{
+      const P=gp('P'),N=gp('N'),Pd=gp('Pdot'),Nd=gp('Ndot'),dt=gp('dt');
+      const Pt=clamp(P+Pd*Math.sin(t*dt*2),.01,1);
+      const Nt=clamp(N+Nd*Math.cos(t*dt*2.3),.01,1);
+      return clamp((Pt-Nt)/(Pt+Nt+1e-9)*.5+.5+n,.001,.999);
+    }
+    case 'v7':{
+      const Q=gt('t_vp')?gp('Q'):1;
+      const sp=gp('mu_sp')*(.85+Math.sin(t*.011)*.15);
+      const mn=gp('mu_mn')*(.85+Math.cos(t*.013)*.15);
+      return clamp(sp*mn/Math.max(sp,.001)*Q+n,.001,.999);
+    }
+    case 'v72':{
+      const sp=gp('mu_sp'), mn=gp('mu_mn');
+      const zf=gt('t_zf')?1:.85;
+      const surv=sp*(1-Math.abs(sp-mn));
+      return clamp(Math.sqrt(Math.max(0,surv*mn))*zf+n,.001,.999);
+    }
+    case 'v73':{
+      const P=gp('P'),N=gp('N'),Q=gt('t_vp')?gp('Q'):1;
+      const base=(P*N)/(P+N-P*N+.001);
+      return clamp(base*(.75+Q*.5)+Math.sin(t*.021)*.025+n,.001,.999);
+    }
+    case 'v8':{
+      const Q=gp('Q'),R=gp('tR'),a=gp('ta');
+      const theta=gp('ttheta')+t*.023;
+      const torus=(R+a*Math.cos(theta))*gp('N');
+      return clamp(torus/(R+a)*(.8+Q*.4)+n,.001,.999);
+    }
+    default: return .35;
+  }
+}
+
+function computeModes(d){
+  const r=G.rng;
+  let pp=clamp(d>.52?.6+r()*.3:d*.4+r()*.08,0,1);
+  let pn=clamp(d>=.25&&d<=.45?.3+r()*.18:(.52-d)*.35,0,1);
+  let np=clamp(d<.20?.5+r()*.25:(1-d)*.22,0,1);
+  let nn=clamp(d>.52?.08:d<.20?.38+r()*.18:.18+r()*.08,0,1);
+  const s=pp+pn+np+nn||1;
+  return {pp:pp/s,pn:pn/s,np:np/s,nn:nn/s};
+}
+
+function getBands(){
+  return {
+    blo: gp('blo')||gp('nlo')||.20,
+    bhi: gp('bhi')||.52,
+    nlo: gp('nlo')||.25,
+    nhi: gp('nhi')||.45,
+    tgt: gp('btgt')||.35,
+  };
+}
+
+function applyGates(d){
+  const {blo,bhi}=getBands();
+  const arrOn=gt('t_arrest')||gt('t_ghost');
+  const genOn=gt('t_genesis');
+  if(arrOn&&d>bhi&&!G.arrest){ G.arrest=true; G.events++; log('ARREST',`δ=${d.toFixed(4)} > ${bhi} — arrest gate engaged`,'larr'); }
+  else if(G.arrest&&d<=bhi*.93){ G.arrest=false; log('RELEASE',`δ=${d.toFixed(4)} — released`,'lok'); }
+  if(genOn&&d<blo&&!G.perturb){ G.perturb=true; G.events++; log('PERTURB',`δ=${d.toFixed(4)} < ${blo} — perturbation gate fired`,'lper'); }
+  else if(G.perturb&&d>=blo*1.1){ G.perturb=false; log('SETTLED',`δ=${d.toFixed(4)} settled`,'lok'); }
+  const {nlo,nhi}=getBands();
+  if(d>=nlo&&d<=nhi) G.nexusOcc++;
+}
+
+function oSt(d){
+  const {blo,bhi,nlo,nhi}=getBands();
+  if(d<.02) return {s:'SINGULARITY',c:'bad'};
+  if(d<blo)  return {s:'STALL',c:'bad'};
+  if(d<nlo)  return {s:'WARN-LO',c:'warn'};
+  if(d<=nhi) return {s:'NEXUS',c:'ok'};
+  if(d<=bhi) return {s:'WARN-HI',c:'warn'};
+  return {s:'RUPTURE',c:'bad'};
+}
+
+function pReturn(d){
+  const k=gp('ok')||4, tgt=gp('btgt')||.35;
+  return Math.exp(-k*Math.abs(d-tgt));
+}
+
+function step(){
+  G.tick++;
+  G.delta=computeDelta(G.tick);
+  G.history.push(G.delta);
+  if(G.history.length>300) G.history.shift();
+  const m=computeModes(G.delta);
+  G.modes=m;
+  const mi=G.delta>.52?0:G.delta<.20?2:G.delta>=.25&&G.delta<=.45?1:3;
+  G.transMatrix[G.prevMode][mi]++;
+  G.prevMode=mi;
+  applyGates(G.delta);
+  G.runData.push({tick:G.tick,delta:G.delta,oracle:oSt(G.delta).s,pp:m.pp,pn:m.pn,np:m.np,nn:m.nn,arrest:G.arrest?1:0,perturb:G.perturb?1:0,nexus:(G.delta>=.25&&G.delta<=.45)?1:0,pret:pReturn(G.delta)});
+  updateUI();
+  if(G.tick>0&&G.tick%100===0) runFalse();
+}
+
+let raf=null;
+function toggleRun(){
+  G.running=!G.running;
+  document.getElementById('play-btn').textContent=G.running?'⏸ PAUSE':'▶ RUN';
+  if(G.running) loop();
+}
+function loop(){ if(!G.running){raf=null;return;} for(let i=0;i<4;i++) step(); drawViz(); raf=requestAnimationFrame(loop); }
+function stepOnce(){ if(!G.running){step();drawViz();} }
+
+function doSweep(){
+  log('SWEEP','Phase sweep: 11×11 P×N grid','lwarn');
+  const sv={P:G.params.P,N:G.params.N,P0:G.params.P0,N0:G.params.N0};
+  const res=[];
+  for(let pi=0;pi<=10;pi++){
+    for(let ni=0;ni<=10;ni++){
+      const p=.05+pi*.09, n=.05+ni*.09;
+      G.params.P=p; G.params.N=n; G.params.P0=p; G.params.N0=n;
+      G.rng=mkRng(G.seed);
+      let ds=0; for(let t=0;t<60;t++) ds+=computeDelta(t);
+      res.push({p,n,d:ds/60});
+    }
+  }
+  Object.assign(G.params,sv);
+  G.sweepResults=res;
+  log('SWEEP',`Complete — ${res.length} combinations`,'lok');
+  drawViz();
+}
+
+function hardReset(){
+  G.running=false; cancelAnimationFrame(raf); raf=null;
+  document.getElementById('play-btn').textContent='▶ RUN';
+  G.tick=0; G.events=0; G.history=[]; G.delta=.35;
+  G.arrest=false; G.perturb=false; G.nexusOcc=0;
+  G.runData=[]; G.transMatrix=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  G.prevMode=0; G.sweepResults=null; G.claimRes={};
+  G.rng=mkRng(G.seed);
+  log('SYS','Hard reset','lsys');
+  buildClaims(); updateUI(); drawViz();
+}
+
+function updateUI(){
+  const d=G.delta, o=oSt(d);
+  const cm={ok:'var(--g)',warn:'var(--y)',bad:'var(--r)'};
+  document.getElementById('ri-tick').textContent=G.tick;
+  const rid=document.getElementById('ri-d'); rid.textContent=d.toFixed(4); rid.style.color=cm[o.c];
+  document.getElementById('ri-st').textContent=G.arrest?'ARRESTED':o.s;
+  document.getElementById('ri-ev').textContent=G.events;
+  document.getElementById('gneedle').style.left=(d*100)+'%';
+  const dv=document.getElementById('dval'); dv.textContent=d.toFixed(4); dv.style.color=cm[o.c];
+  const m=G.modes;
+  ['pp','pn','np','nn'].forEach(k=>{
+    document.getElementById('mc-'+k).textContent=(m[k]*100).toFixed(1)+'%';
+    document.getElementById('mb-'+k).style.width=(m[k]*100)+'%';
+  });
+  const no=G.tick>0?((G.nexusOcc/G.tick)*100).toFixed(1)+'%':'—';
+  const ddt=G.history.length>10?(G.delta-G.history[G.history.length-11]).toFixed(5):'—';
+  document.getElementById('mt').innerHTML=[
+    ['P(return|δ)',pReturn(d).toFixed(4)],
+    ['Nexus occ.',no],
+    ['dδ/dt',ddt],
+    ['Events',G.events],
+    ['Arrest',G.arrest?'<span class="ghost">YES</span>':'no'],
+    ['Perturb',G.perturb?'<span class="ghost">YES</span>':'no'],
+  ].map(([l,v])=>`<tr><td>${l}</td><td>${v}</td></tr>`).join('');
+  drawHist();
+}
+
+// CANVAS
+let VC=null,Vx=null;
+function drawViz(){
+  if(!VC) VC=document.getElementById('vc');
+  const ar=VC.parentElement;
+  if(VC.width!==ar.clientWidth||VC.height!==ar.clientHeight){VC.width=ar.clientWidth;VC.height=ar.clientHeight;}
+  Vx=VC.getContext('2d');
+  if(G.sweepResults){drawSweep();return;}
+  drawMain();
+}
+
+function drawMain(){
+  const w=VC.width,h=VC.height,ctx=Vx;
+  ctx.fillStyle='#030303'; ctx.fillRect(0,0,w,h);
+  const pad=44,bh=h-pad*2,bw=w-pad*2;
+  // Zone fills
+  ctx.fillStyle='rgba(201,78,78,.055)';  ctx.fillRect(pad,pad,bw,bh*.2);
+  ctx.fillStyle='rgba(78,201,122,.04)';  ctx.fillRect(pad,pad+bh*.25,bw,bh*.20);
+  ctx.fillStyle='rgba(201,78,78,.055)';  ctx.fillRect(pad,pad+bh*.52,bw,bh*.48);
+  // BAND lines
+  ctx.setLineDash([3,5]);
+  [[.20,'rgba(201,168,78,.28)'],[.25,'rgba(78,201,122,.22)'],[.35,'rgba(78,201,122,.5)'],[.45,'rgba(78,201,122,.22)'],[.52,'rgba(201,168,78,.28)']].forEach(([v,c])=>{
+    const y=pad+bh*(1-v);
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=c;ctx.font='9px IBM Plex Mono';ctx.textAlign='right';ctx.fillText(v.toFixed(2),pad-4,y+3);
+  });
+  ctx.setLineDash([]);
+  // δ trajectory
+  if(G.history.length>1){
+    ctx.beginPath();
+    G.history.forEach((v,i)=>{
+      const x=pad+i/(G.history.length-1)*bw, y=pad+bh*(1-v);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle='#c8a96e'; ctx.lineWidth=1.5; ctx.stroke();
+    const cy=pad+bh*(1-G.delta);
+    ctx.beginPath();ctx.arc(w-pad,cy,4,0,Math.PI*2);
+    ctx.fillStyle=G.delta<.2||G.delta>.52?'#c94e4e':G.delta<.25||G.delta>.45?'#c9a84e':'#4ec97a';
+    ctx.fill();
+  }
+  // Axis
+  ctx.fillStyle='rgba(255,255,255,.15)';ctx.font='9px IBM Plex Mono';ctx.textAlign='left';
+  ctx.fillText('tick →',pad,h-6); ctx.textAlign='center'; ctx.fillText('δ',8,pad);
+  // Mode bar
+  const mx=w-110,my=h-72,mw=90,mh=50;
+  ctx.fillStyle='rgba(10,10,10,.8)';ctx.fillRect(mx-3,my-3,mw+6,mh+14);
+  const mc=G.modes,mc_c=['#c94e4e','#4ec97a','#8e4ec9','#4ec9c9'],mc_l=['P+','P−','N+','N−'],mc_v=[mc.pp,mc.pn,mc.np,mc.nn];
+  mc_v.forEach((v,i)=>{
+    const bx=mx+i*(mw/4),bh2=mh*v;
+    ctx.fillStyle=mc_c[i]+'44';ctx.fillRect(bx,my+mh-bh2,mw/4-2,bh2);
+    ctx.fillStyle=mc_c[i];ctx.font='7px IBM Plex Mono';ctx.textAlign='center';ctx.fillText(mc_l[i],bx+mw/8,my+mh+9);
+  });
+  document.getElementById('viz-ovr').textContent=`${VER[G.ver].name}  ·  ${G.scene}  ·  t=${G.tick}  ·  δ=${G.delta.toFixed(4)}  ·  ${oSt(G.delta).s}${G.arrest?' ● ARRESTED':''}`;
+}
+
+function drawSweep(){
+  const w=VC.width,h=VC.height,ctx=Vx;
+  ctx.fillStyle='#030303';ctx.fillRect(0,0,w,h);
+  const pad=40,cw=(w-pad*2)/11,ch=(h-pad*2)/11;
+  G.sweepResults.forEach(({p,n,d})=>{
+    const xi=Math.round(p/.09-.5),yi=Math.round(n/.09-.5);
+    const x=pad+xi*cw,y=pad+(10-yi)*ch;
+    const c=d<.2||d>.52?'rgba(201,78,78,.75)':d<.25||d>.45?'rgba(201,168,78,.65)':'rgba(78,201,122,.65)';
+    ctx.fillStyle=c;ctx.fillRect(x,y,cw-1,ch-1);
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='7px IBM Plex Mono';ctx.textAlign='center';ctx.fillText(d.toFixed(2),x+cw/2,y+ch/2+3);
+  });
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px IBM Plex Mono';ctx.textAlign='center';
+  ctx.fillText('P →',w/2,h-4);ctx.save();ctx.translate(10,h/2);ctx.rotate(-Math.PI/2);ctx.fillText('N →',0,0);ctx.restore();
+  ctx.textAlign='left';ctx.fillText('PHASE DIAGRAM — δ mean by P×N',pad,pad-8);
+  document.getElementById('viz-ovr').textContent='Phase sweep. Red=rupture/stall · Yellow=warn · Green=Nexus';
+}
+
+function drawHist(){
+  const hc=document.getElementById('hc'),pw=hc.parentElement.clientWidth-16;
+  if(pw<=0)return;
+  hc.width=pw;hc.height=56;
+  const ctx=hc.getContext('2d'),w=pw,h=56;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='rgba(201,78,78,.09)';ctx.fillRect(0,0,w,h*.2);
+  ctx.fillStyle='rgba(201,78,78,.07)';ctx.fillRect(0,h*.52,w,h*.48);
+  ctx.fillStyle='rgba(78,201,122,.05)';ctx.fillRect(0,h*(1-.52),w,h*(.52-.25));
+  if(G.history.length<2)return;
+  ctx.beginPath();
+  G.history.forEach((v,i)=>{const x=i/(G.history.length-1)*w,y=h*(1-v);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.strokeStyle='#c8a96e';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fillStyle='rgba(200,169,110,.05)';ctx.fill();
+  ctx.beginPath();ctx.moveTo(0,h*.65);ctx.lineTo(w,h*.65);
+  ctx.strokeStyle='rgba(78,201,122,.28)';ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.stroke();ctx.setLineDash([]);
+}
+
+// FALSIFICATION
+function buildClaims(){
+  const cl=CLAIMS[G.ver]||[];
+  document.getElementById('false-grid').innerHTML=cl.map(c=>`
+    <div class="claim" id="cl-${c.id}">
+      <div class="cl-hdr"><span class="cl-id">${c.id}</span><span class="cl-st st-idle" id="cs-${c.id}">IDLE</span></div>
+      <div class="cl-claim">${c.claim}</div>
+      <div class="cl-cond">${c.cond}</div>
+      <div class="cl-res" id="cr-${c.id}">—</div>
+      <div class="cl-prog"><div class="cl-pfill" id="cp-${c.id}" style="width:0%"></div></div>
+    </div>`).join('');
+}
+
+function runFalse(){
+  const cl=CLAIMS[G.ver]||[];
+  cl.forEach(c=>{
+    const prog=Math.min(100,G.tick/20);
+    const pe=document.getElementById('cp-'+c.id); if(pe) pe.style.width=prog+'%';
+    if(G.tick<100)return;
+    const r=evalClaim(c); G.claimRes[c.id]=r;
+    const se=document.getElementById('cs-'+c.id),re=document.getElementById('cr-'+c.id);
+    if(se){se.className='cl-st '+(r.pass===null?'st-run':r.pass?'st-pass':'st-fail');se.textContent=r.pass===null?'RUN':r.pass?'PASS':'FAIL';}
+    if(re) re.textContent=r.detail;
+  });
+}
+
+function evalClaim(c){
+  const d=G.delta,t=G.tick,h=G.history;
+  const no=t>0?G.nexusOcc/t:0;
+  switch(c.test){
+    case 'noc': return {pass:no>.1,detail:`Nexus occ: ${(no*100).toFixed(1)}% (need >10%)`};
+    case 'zdcol': return {pass:h.filter(v=>v<.05).length<5,detail:`Near-zero ticks: ${h.filter(v=>v<.05).length}`};
+    case 'abl': return {pass:null,detail:'Toggle t_coupling=off and rerun to test'};
+    case 'mtr':{const diag=G.transMatrix.reduce((s,r,i)=>s+r[i],0);const tot=G.transMatrix.reduce((s,r)=>s+r.reduce((a,b)=>a+b,0),1);return {pass:diag/tot<.7,detail:`Diagonal dominance: ${(diag/tot*100).toFixed(1)}%`};}
+    case 'base': return {pass:null,detail:'Switch to baseline scenario to compare'};
+    case 'nd': return {pass:no>.05&&d>.1,detail:`Nexus occ=${(no*100).toFixed(1)}%, δ=${d.toFixed(4)}`};
+    case 'anch_abl': return {pass:null,detail:'Toggle t_AH or t_AL off and rerun'};
+    case 'ah0': return {pass:null,detail:'Set A_H=0 toggle off and observe'};
+    case 'al0': return {pass:null,detail:'Set A_L=0 toggle off and observe'};
+    case 'anchscale': return {pass:null,detail:'Manual: vary A_H×A_L product and measure corridor width'};
+    case 'arr_rec':{const ib=h.slice(-20).filter(v=>v>=.2&&v<=.52).length;return {pass:ib>=10,detail:`${ib}/20 recent ticks in BAND`};}
+    case 'gen_rec': return {pass:d>.20||(h.length>10&&h[h.length-1]>h[h.length-11]),detail:`δ=${d.toFixed(4)}`};
+    case 'ghost_opt': return {pass:null,detail:'Compare post-GHOST vs no-arrest trajectory quality manually'};
+    case 'band_pers': return {pass:h.filter(v=>v>=.2&&v<=.52).length/Math.max(1,h.length)>.5,detail:`In-BAND fraction: ${(h.filter(v=>v>=.2&&v<=.52).length/Math.max(1,h.length)*100).toFixed(1)}%`};
+    case 'setop_v_force': return {pass:null,detail:'Compare v7 δ curve vs v6 at same P/N manually'};
+    case 'vp_mod': return {pass:null,detail:'Vary Q slider and observe δ modulation'};
+    case 'zf': return {pass:null,detail:'Zero-friction: no force computed on rejected states by definition'};
+    case 'band_scale': return {pass:null,detail:'Vary Q and check BAND boundaries stay at [0.20,0.52]'};
+    case 'oracle_fc': return {pass:pReturn(d)>.15,detail:`P(return)=${pReturn(d).toFixed(4)}`};
+    case 'eff': return {pass:null,detail:'Computational efficiency: manual profiling required'};
+    case 'anch_v_pol': return {pass:null,detail:'Toggle t_hard off and compare corridor width'};
+    case 'soft_rec': return {pass:h.filter(v=>v>=.2&&v<=.52).length/Math.max(1,h.length)>.4,detail:`Recovery fraction: ${(h.filter(v=>v>=.2&&v<=.52).length/Math.max(1,h.length)*100).toFixed(1)}%`};
+    case 'oracle_cal': return {pass:pReturn(d)<.9||no>.5,detail:`P(return)=${pReturn(d).toFixed(3)}, Nexus occ=${(no*100).toFixed(1)}%`};
+    case 'asym_resp': return {pass:null,detail:'Compare GHOST vs Genesis response symmetry manually'};
+    case 'scale_inv': return {pass:null,detail:`Scale invariance tol: ${gp('sc_inv')}. Multi-layer run required.`};
+    case 'dbl_inv': return {pass:null,detail:`Inversion tol: ${gp('inv_sym')}. Full run + comparison needed.`};
+    case 'torus_traj': return {pass:h.length>50&&new Set(h.map(v=>v.toFixed(3))).size>30,detail:`Unique δ values: ${new Set(h.map(v=>v.toFixed(3))).size}`};
+    case 'bb_gen': return {pass:null,detail:`BB threshold: ${gp('bb_thr')}. Requires singularity-to-release run.`};
+    default: return {pass:null,detail:'Manual verification required'};
+  }
+}
+
+// LOG
+function log(lv,msg,cls=''){
+  G.logFull.push({tick:G.tick,lv,msg,cls});
+  if(G.logFull.length>3000) G.logFull.shift();
+  if(document.getElementById('panel-log').classList.contains('active')) renderLog();
+}
+function renderLog(){
+  const f=(document.getElementById('log-filter')||{}).value||'';
+  const entries=G.logFull.filter(e=>!f||e.msg.toLowerCase().includes(f.toLowerCase())||e.lv.toLowerCase().includes(f.toLowerCase()));
+  document.getElementById('log-scroll').innerHTML=entries.slice(-300).reverse().map(e=>`<div class="le"><span class="le-tick">${e.tick}</span><span class="le-lv ${e.cls}">${e.lv}</span><span class="le-msg">${e.msg}</span></div>`).join('');
+  document.getElementById('log-ct').textContent=G.logFull.length;
+}
+
+// EXPORT
+function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
+function exportCSV(){
+  const h='tick,delta,oracle,pp,pn,np,nn,arrest,perturb,nexus,pret\n';
+  const rows=G.runData.map(r=>`${r.tick},${r.delta.toFixed(6)},${r.oracle},${r.pp.toFixed(4)},${r.pn.toFixed(4)},${r.np.toFixed(4)},${r.nn.toFixed(4)},${r.arrest},${r.perturb},${r.nexus},${r.pret.toFixed(4)}`).join('\n');
+  dl(`expanse_${G.ver}_${Date.now()}.csv`,h+rows,'text/csv');
+}
+function exportJSON(){
+  dl(`expanse_${G.ver}_${Date.now()}.json`,JSON.stringify({
+    version:G.ver,scene:G.scene,seed:G.seed,ticks:G.tick,events:G.events,
+    params:G.params,toggles:G.togs,
+    metrics:{mean_delta:(G.history.reduce((a,b)=>a+b,0)/Math.max(1,G.history.length)).toFixed(6),nexus_occ:(G.nexusOcc/Math.max(1,G.tick)).toFixed(4)},
+    claims:G.claimRes,transition_matrix:G.transMatrix,timestamp:new Date().toISOString(),
+  },null,2),'application/json');
+}
+function exportTM(){
+  const lb=['rupture','nexus','warn','other'];
+  dl(`expanse_tm_${G.ver}_${Date.now()}.csv`,'from\\to,'+lb.join(',')+'\n'+G.transMatrix.map((r,i)=>lb[i]+','+r.join(',')).join('\n'),'text/csv');
+}
+function dlLog(){
+  dl(`expanse_log_${G.ver}_${Date.now()}.txt`,G.logFull.map(e=>`[${e.tick}] ${e.lv}: ${e.msg}`).join('\n'),'text/plain');
+}
+function exportPNG(){
+  if(!G.sweepResults) doSweep();
+  const a=document.createElement('a');a.href=document.getElementById('vc').toDataURL('image/png');
+  a.download=`expanse_phase_${G.ver}_${Date.now()}.png`;a.click();
+}
+function exportFalse(){
+  const cl=CLAIMS[G.ver]||[];
+  let o=`PROJECT EXPANSE — FALSIFICATION REPORT\nVersion: ${VER[G.ver].name}\nTicks: ${G.tick}\n${new Date().toISOString()}\n\n`;
+  cl.forEach(c=>{const r=G.claimRes[c.id]||{};o+=`${c.id}\nClaim: ${c.claim}\nFalsified if: ${c.cond}\nResult: ${r.pass===null?'PENDING':r.pass?'PASS':'FAIL'}\nDetail: ${r.detail||'—'}\n\n`;});
+  dl(`expanse_false_${G.ver}_${Date.now()}.txt`,o,'text/plain');
+}
+
+// UI BUILDERS
+function setVer(v){
+  G.ver=v; G.params={}; G.togs={};
+  document.querySelectorAll('.ver-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('vb-'+v).classList.add('active');
+  document.getElementById('ver-tag').textContent=VER[v].tag;
+  buildCtrl(); buildClaims(); buildEqs(); hardReset();
+  log('SYS','Version → '+VER[v].name,'lsys');
+}
+function setScene(s){
+  G.scene=s;
+  document.querySelectorAll('.scene-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('scb-'+s).classList.add('active');
+  log('SYS','Scenario → '+s,'lsys');
+}
+function setTab(t,el){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='viz'){requestAnimationFrame(drawViz);}
+  if(t==='log') renderLog();
+}
+
+function buildCtrl(){
+  const v=VER[G.ver];
+  document.getElementById('ctrl-grid').innerHTML=v.groups.map(g=>{
+    let inner='';
+    if(g.items){
+      inner=g.items.map(it=>`
+        <div class="pr">
+          <label><span class="sym">${it.sym}</span> ${it.lbl}<span class="val" id="pv-${it.id}">${it.def}</span></label>
+          <input type="range" class="${it.r||''}" id="pr-${it.id}" min="${it.min}" max="${it.max}" step="${it.step}" value="${it.def}" oninput="setP('${it.id}',+this.value)">
+        </div>`).join('');
+      g.items.forEach(it=>G.params[it.id]=it.def);
+    }
+    if(g.togs){
+      inner=g.togs.map(t=>`
+        <div class="tog-row">
+          <label>${t.lbl}</label>
+          <div class="tog ${t.def?'on':''}" id="tog-${t.id}" onclick="flipTog('${t.id}')"></div>
+        </div>`).join('');
+      g.togs.forEach(t=>G.togs[t.id]=t.def);
+    }
+    return `<div class="cgroup"><div class="cg-hdr">${g.g} <span class="cg-tag">${g.tag}</span></div>${inner}</div>`;
+  }).join('');
+}
+
+function setP(id,v){
+  G.params[id]=v;
+  const el=document.getElementById('pv-'+id);
+  if(el) el.textContent=Number.isInteger(v)?v:v.toFixed(3);
+}
+function flipTog(id){
+  G.togs[id]=!G.togs[id];
+  const el=document.getElementById('tog-'+id); if(el) el.classList.toggle('on',G.togs[id]);
+  log('TOG',id+' → '+(G.togs[id]?'ON':'OFF'),'lsys');
+}
+function buildEqs(){
+  const v=VER[G.ver];
+  document.getElementById('eq-box').innerHTML=v.eqs.map(e=>`<div>${e}</div>`).join('');
+}
+
+window.addEventListener('load',()=>{
+  G.rng=mkRng(G.seed);
+  buildCtrl(); buildClaims(); buildEqs();
+  log('SYS','Project Expanse initialized','lsys');
+  log('SYS',`${VER[G.ver].name} / ${G.scene}`,'lsys');
+  window.addEventListener('resize',()=>{ if(document.getElementById('panel-viz').classList.contains('active')) drawViz(); });
+});
+</script>
+</body>
+</html>
