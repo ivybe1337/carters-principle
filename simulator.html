@@ -1,1 +1,1124 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RAD Simulator Launcher</title><style>body{margin:0;background:#08090b;color:#eee9df;font:17px/1.6 system-ui;padding:40px}main{max-width:900px;margin:auto}.k{color:#d6b36a;letter-spacing:.16em;text-transform:uppercase;font-size:12px}h1{font:400 52px Georgia,serif;margin:10px 0 15px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:28px}.card{border:1px solid #2b3342;background:#11151d;border-radius:22px;padding:24px}a.btn{display:inline-block;margin-top:14px;border:1px solid #8bd3e6;color:#8bd3e6;border-radius:999px;padding:9px 14px;text-decoration:none}.note{color:#aaa39a}.small{font-size:13px;color:#aaa39a}</style></head><body><main><div class="k">Recurse Intelligence Lab</div><h1>Simulation Sandboxes</h1><p class="note">These are separate programs. The Newtonian sandbox uses conventional inverse-square gravity. The RAD sandbox uses only candidate-state generation, active restraint, and Q resolution.</p><div class="grid"><section class="card"><h2>Known-Universe Sandbox</h2><p class="note">A conventional N-body gravity toy using acceleration, velocity, and position integration.</p><a class="btn" href="newtonian.html">Open Newtonian Sandbox</a></section><section class="card"><h2>RAD Universe Sandbox</h2><p class="note">A pure set-selection simulator using S_P, M_N, delta_set, and Q-mediated resolution. No Newtonian force law is used in this program.</p><a class="btn" href="rad-universe.html">Open RAD Sandbox</a></section></div><p class="small">Exploratory visualization only. Validation requires separate tests, documented parameters, and reproducible reports.</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RAD Simulator — Carter's Principle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#111;--s2:#181818;--border:#1e1e1e;
+  --text:#e8e4dc;--muted:#6a6560;--accent:#c8a96e;--a2:#8ab4c8;
+  --green:#5cb87a;--red:#c86e6e;--orange:#c89a6e;--purple:#9a6ec8;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;font-size:13px}
+
+/* NAV */
+nav{height:46px;display:flex;align-items:center;padding:0 1.2rem;border-bottom:1px solid var(--border);flex-shrink:0;gap:1.2rem;background:rgba(10,10,10,0.98);z-index:50;position:relative}
+.nav-brand{font-family:'EB Garamond',serif;font-size:1rem;color:var(--accent);text-decoration:none;letter-spacing:.04em;white-space:nowrap}
+.nav-sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+.nav-title{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.nav-right{margin-left:auto;display:flex;gap:.5rem;align-items:center}
+.mode-btn{padding:.22rem .65rem;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;border-radius:2px;white-space:nowrap}
+.mode-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,.06)}
+
+/* LAYOUT */
+.app{display:flex;height:calc(100vh - 46px);overflow:hidden}
+
+/* PANELS */
+.panel-left{width:240px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;background:var(--surface)}
+.panel-right{width:220px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface);overflow-y:auto}
+.psec{padding:.8rem;border-bottom:1px solid var(--border)}
+.plabel{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:block}
+
+/* SCENARIO LIST */
+.scenario-list{display:flex;flex-direction:column;gap:.25rem}
+.sbtn{padding:.4rem .6rem;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.72rem;cursor:pointer;text-align:left;transition:all .15s;font-family:'Inter',sans-serif;border-radius:2px;line-height:1.3;width:100%}
+.sbtn:hover{border-color:rgba(200,169,110,.3);color:var(--text)}
+.sbtn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,.05)}
+.sbtn .stag{font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:.1rem}
+
+/* MATH TABS */
+.math-tabs{display:flex;flex-wrap:wrap;gap:.25rem}
+.mtab{padding:.22rem .5rem;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.65rem;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;border-radius:2px}
+.mtab:hover{color:var(--text)}
+.mtab.active{border-color:var(--a2);color:var(--a2);background:rgba(138,180,200,.06)}
+
+/* CONTROLS */
+.ctrl{display:flex;flex-direction:column;gap:.5rem}
+.ctrl-item label{font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:.25rem}
+.ctrl-item label span{color:var(--text);font-weight:400}
+input[type=range]{width:100%;-webkit-appearance:none;height:2px;background:var(--border);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;background:var(--accent);border-radius:50%;cursor:pointer}
+.btns{display:flex;gap:.3rem;margin-top:.4rem}
+.pbtn{flex:1;padding:.42rem;border:1px solid var(--border);background:transparent;color:var(--text);font-size:.68rem;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;border-radius:2px}
+.pbtn:hover{background:var(--s2)}
+.pbtn.prim{border-color:var(--accent);color:var(--accent)}
+.pbtn.prim:hover{background:rgba(200,169,110,.06)}
+.pbtn.dang{border-color:var(--red);color:var(--red)}
+.pbtn.dang:hover{background:rgba(200,110,110,.06)}
+
+/* METRICS */
+.mets{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
+.met{background:var(--s2);padding:.5rem;border:1px solid var(--border);border-radius:2px}
+.met-l{font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.15rem}
+.met-v{font-family:'EB Garamond',serif;font-size:1.2rem;color:var(--text)}
+.met-v.ok{color:var(--green)}
+.met-v.warn{color:var(--orange)}
+.met-v.bad{color:var(--red)}
+.met-v.ghost{color:var(--a2)}
+
+/* LOG */
+.log-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.log{font-size:.65rem;color:var(--muted);line-height:1.7;overflow-y:auto;flex:1;padding:.5rem .8rem}
+.lok{color:var(--green)}.lwarn{color:var(--orange)}.lghost{color:var(--a2)}.lgen{color:var(--purple)}.lrupt{color:var(--red)}
+
+/* CENTER */
+.center{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.canvas-area{flex:1;position:relative;overflow:hidden;background:#050505}
+canvas#main{position:absolute;inset:0}
+.clabel{position:absolute;top:.6rem;left:.8rem;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.25);pointer-events:none}
+.covr{position:absolute;bottom:.6rem;left:.8rem;right:.8rem;font-size:.65rem;color:rgba(255,255,255,0.18);pointer-events:none;line-height:1.5}
+.vs-bar{height:32px;display:flex;border-top:1px solid var(--border);flex-shrink:0}
+.vs-btn{flex:1;border:none;background:transparent;cursor:pointer;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;transition:background .15s;font-family:'Inter',sans-serif;color:var(--muted)}
+.vs-btn.vrad{border-right:1px solid var(--border)}
+.vs-btn.vrad.von{color:var(--accent);background:rgba(200,169,110,.04)}
+.vs-btn.vcls.von{color:var(--a2);background:rgba(138,180,200,.04)}
+
+/* RIGHT PANEL */
+.gauge-sec{padding:.8rem}
+.gauge-bar{height:6px;background:var(--border);border-radius:3px;position:relative;margin:.5rem 0 .25rem;overflow:visible}
+.gz{position:absolute;top:0;height:100%}
+.gz1{left:0;width:20%;background:rgba(200,110,110,.5);border-radius:3px 0 0 3px}
+.gz2{left:20%;width:5%;background:rgba(200,154,110,.3)}
+.gz3{left:25%;width:20%;background:rgba(92,184,122,.25)}
+.gz4{left:45%;width:7%;background:rgba(200,154,110,.3)}
+.gz5{left:52%;width:48%;background:rgba(200,110,110,.4);border-radius:0 3px 3px 0}
+.gneedle{position:absolute;top:-5px;width:3px;height:16px;background:var(--accent);border-radius:2px;transform:translateX(-50%);transition:left .12s;z-index:2}
+.glabels{display:flex;justify-content:space-between;font-size:.52rem;color:var(--muted)}
+.dbig{font-family:'EB Garamond',serif;font-size:2.2rem;text-align:center;margin:.3rem 0 0}
+
+.hist-sec{padding:.5rem .8rem;border-top:1px solid var(--border)}
+canvas#hist{width:100%;height:70px;display:block}
+
+.eq-sec{padding:.8rem;border-top:1px solid var(--border);flex:1;overflow-y:auto}
+.eq-name{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--a2);margin-bottom:.5rem}
+.eq-desc{font-size:.68rem;color:var(--muted);line-height:1.5;margin-bottom:.7rem}
+.eq-box{background:var(--s2);border:1px solid var(--border);border-left:2px solid var(--a2);padding:.6rem .8rem;margin-bottom:.4rem}
+.eq-lab{font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--a2);margin-bottom:.2rem}
+.eq-val{font-family:'EB Garamond',serif;font-size:.95rem;color:var(--text);line-height:1.5}
+
+@media(max-width:900px){.panel-right{display:none}}
+@media(max-width:640px){.panel-left{width:190px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Carter's Principle</a>
+  <div class="nav-sep"></div>
+  <span class="nav-title">RAD Simulator</span>
+  <div class="nav-right">
+    <button class="mode-btn active" id="btn-rad" onclick="setMode('rad')">RAD Physics</button>
+    <button class="mode-btn" id="btn-cls" onclick="setMode('classical')">Classical Baseline</button>
+    <a href="catalog.html" style="color:var(--muted);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;margin-left:.4rem">Catalog</a>
+    <a href="expanse.html" style="color:var(--r,#c86e6e);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(200,110,110,.25);padding:.15rem .4rem">⬡ EXPANSE</a>
+  </div>
+</nav>
+
+<div class="app">
+
+<!-- LEFT -->
+<div class="panel-left">
+  <div class="psec">
+    <span class="plabel">Simulation</span>
+    <div class="scenario-list">
+      <button class="sbtn active" id="sc-solar" onclick="loadScene('solar')">Solar System<div class="stag">Orbital Mechanics</div></button>
+      <button class="sbtn" id="sc-stellar" onclick="loadScene('stellar')">Star: Birth → Death<div class="stag">Nebula → Supernova</div></button>
+      <button class="sbtn" id="sc-particle" onclick="loadScene('particle')">Particle Field<div class="stag">Quantum Persistence</div></button>
+      <button class="sbtn" id="sc-economics" onclick="loadScene('economics')">Economic System<div class="stag">Market Dynamics</div></button>
+      <button class="sbtn" id="sc-bigbang" onclick="loadScene('bigbang')">Big Bang Genesis<div class="stag">n.ω Release Event</div></button>
+    </div>
+  </div>
+
+  <div class="psec">
+    <span class="plabel">Math Version</span>
+    <div class="math-tabs">
+      <button class="mtab" id="mv-v6" onclick="setMath('v6')">v6</button>
+      <button class="mtab active" id="mv-v7" onclick="setMath('v7')">v7</button>
+      <button class="mtab" id="mv-v72" onclick="setMath('v72')">v7.2</button>
+      <button class="mtab" id="mv-v73" onclick="setMath('v73')">v7.3</button>
+      <button class="mtab" id="mv-v8" onclick="setMath('v8')">v8</button>
+    </div>
+  </div>
+
+  <div class="psec">
+    <span class="plabel">Parameters</span>
+    <div class="ctrl">
+      <div class="ctrl-item">
+        <label>Potentiation P <span id="vp">0.65</span></label>
+        <input type="range" id="rp" min="0.01" max="1" step="0.01" value="0.65" oninput="setParam('p',+this.value)">
+      </div>
+      <div class="ctrl-item">
+        <label>Negation N <span id="vn">0.42</span></label>
+        <input type="range" id="rn" min="0.01" max="1" step="0.01" value="0.42" oninput="setParam('n',+this.value)">
+      </div>
+      <div class="ctrl-item">
+        <label>Viewport Q <span id="vq">0.50</span></label>
+        <input type="range" id="rq" min="0.05" max="1" step="0.01" value="0.50" oninput="setParam('q',+this.value)">
+      </div>
+      <div class="ctrl-item">
+        <label>Speed <span id="vt">1×</span></label>
+        <input type="range" id="rt" min="0.5" max="8" step="0.5" value="1" oninput="setParam('t',+this.value)">
+      </div>
+    </div>
+    <div class="btns">
+      <button class="pbtn prim" id="playbtn" onclick="togglePlay()">▶ Play</button>
+      <button class="pbtn" onclick="doStep()">Step</button>
+      <button class="pbtn dang" onclick="doReset()">Reset</button>
+    </div>
+  </div>
+
+  <div class="psec">
+    <span class="plabel">Metrics</span>
+    <div class="mets">
+      <div class="met"><div class="met-l">δ Index</div><div class="met-v" id="mv-delta">0.350</div></div>
+      <div class="met"><div class="met-l">State</div><div class="met-v" id="mv-state">NOMINAL</div></div>
+      <div class="met"><div class="met-l">Tick</div><div class="met-v" id="mv-tick">0</div></div>
+      <div class="met"><div class="met-l">Events</div><div class="met-v" id="mv-evt">0</div></div>
+    </div>
+  </div>
+
+  <div class="psec log-wrap">
+    <span class="plabel">Event Log</span>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<!-- CENTER -->
+<div class="center">
+  <div class="canvas-area" id="canvas-area">
+    <canvas id="main"></canvas>
+    <div class="clabel" id="clabel">Solar System — RAD v7</div>
+    <div class="covr" id="covr">Orbital stability governed purely by δ staying within the B.A.N.D. corridor. No gravitational constant encoded.</div>
+  </div>
+  <div class="vs-bar">
+    <button class="vs-btn vrad von" id="vs-rad" onclick="setMode('rad')">● RAD Mechanics</button>
+    <button class="vs-btn vcls" id="vs-cls" onclick="setMode('classical')">○ Classical Baseline</button>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="panel-right">
+  <div class="gauge-sec">
+    <span class="plabel">Asymmetry Index δ</span>
+    <div class="gauge-bar">
+      <div class="gz gz1"></div><div class="gz gz2"></div><div class="gz gz3"></div>
+      <div class="gz gz4"></div><div class="gz gz5"></div>
+      <div class="gneedle" id="needle"></div>
+    </div>
+    <div class="glabels"><span>0</span><span>0.20</span><span>0.35★</span><span>0.52</span><span>1</span></div>
+    <div class="dbig" id="dbig">0.350</div>
+  </div>
+
+  <div class="hist-sec">
+    <span class="plabel">δ History</span>
+    <canvas id="hist"></canvas>
+  </div>
+
+  <div class="eq-sec">
+    <div class="eq-name" id="eq-name">RAD v7</div>
+    <div class="eq-desc" id="eq-desc">Set-theoretic persistence filtration. State selection replaces force opposition.</div>
+    <div id="eq-content"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// RAD SIMULATOR — Clean Rebuild
+// Pure RAD mechanics. No Newtonian physics.
+// No unreleased terminology.
+// ═══════════════════════════════════════════════════
+
+// ── MATH VERSIONS ──────────────────────────────────
+const MV = {
+  v6:{
+    name:'RAD v6',
+    desc:'Original force-opposition model. P and N as competing vectors. δ measured as net directional imbalance.',
+    eqs:[
+      {l:'Asymmetry Index',v:'δ = (P − N) / (P + N)'},
+      {l:'Net Drive',v:'F = P·cos(θ) − N·sin(θ)'},
+      {l:'State Update',v:'S(t+1) = S(t) + F · Δt'},
+      {l:'Collapse',v:'δ → 0 : terminal stasis'},
+      {l:'Rupture',v:'δ > 0.52 : unbound divergence'},
+    ],
+    calcDelta(p,n,q,t){
+      const raw = (p - n) / (p + n + 1e-9);
+      return clamp(0.5 + raw * 0.45 + Math.sin(t*0.007)*0.03, 0.001, 0.999);
+    },
+    orbitMod(d,i,t){ return 1 + (d - 0.35) * 0.25 * Math.sin(t*0.02 + i); },
+  },
+  v7:{
+    name:'RAD v7',
+    desc:'Set-theoretic selection. S_{k+1} = S_P ∩ M_N. The next state is selected, not fought into being.',
+    eqs:[
+      {l:'State Selection',v:'S_{k+1} = S_P ∩ M_N'},
+      {l:'Asymmetry Index',v:'δ = μ(S_P ∩ M_N) / μ(S_P)'},
+      {l:'B.A.N.D.',v:'0.25 ≤ δ ≤ 0.45 (nominal)'},
+      {l:'Persistence Gate (low)',v:'δ < 0.20 → inject bounded asymmetry'},
+      {l:'Arrest Gate (high)',v:'δ > 0.52 → suspend trajectory'},
+    ],
+    calcDelta(p,n,q,t){
+      const sp = p * (0.85 + Math.sin(t*0.011)*0.15);
+      const mn = n * (0.85 + Math.cos(t*0.013)*0.15);
+      const intersect = sp * mn;
+      return clamp(intersect / Math.max(sp, 0.001) + Math.sin(t*0.019)*0.02, 0.001, 0.999);
+    },
+    orbitMod(d,i,t){ return 1 + (d - 0.35) * 0.3 * Math.cos(t*0.015 + i*1.3); },
+  },
+  v72:{
+    name:'RAD v7.2',
+    desc:'Zero-friction filtration. Rejected states fail selection — no collision work. Survival ratio as governance metric.',
+    eqs:[
+      {l:'Persistence Mask',v:'M_N : candidate → survive | fail'},
+      {l:'Survival Ratio',v:'δ = μ(S_P ∩ M_N) / μ(S_P)'},
+      {l:'Zero Friction Axiom',v:'W_rejected = 0 (no opposition work)'},
+      {l:'Return Forecast',v:'τ = f(δ, dδ/dt, A_H, A_L)'},
+      {l:'B.A.N.D.',v:'0.20 ≤ δ ≤ 0.52, target δ ≈ 0.35'},
+    ],
+    calcDelta(p,n,q,t){
+      const sp = p;
+      const mn = n;
+      const survival = sp * (1 - Math.abs(sp - mn));
+      return clamp(Math.sqrt(Math.max(0, survival * mn)) + Math.cos(t*0.017)*0.025, 0.001, 0.999);
+    },
+    orbitMod(d,i,t){ return 1 + Math.sin(d * Math.PI * 2) * 0.2 * Math.sin(t*0.012 + i); },
+  },
+  v73:{
+    name:'RAD v7.3',
+    desc:'Reconciled Oracle model. Soft B.A.N.D. with return-probability corridors. High and low anchors govern recovery.',
+    eqs:[
+      {l:'Nominal Nexus',v:'0.25 ≤ δ ≤ 0.45'},
+      {l:'Persistence Corridor',v:'0.20 ≤ δ ≤ 0.52'},
+      {l:'High Anchor',v:'A_H : rupture-drift → suspend + re-entry'},
+      {l:'Low Anchor',v:'A_L : stall-drift → bounded perturbation'},
+      {l:'Oracle Return Prob.',v:'P(return) = exp(−k|δ − 0.35|)'},
+    ],
+    calcDelta(p,n,q,t){
+      const base = (p * n) / (p + n - p*n + 0.001);
+      const qMod = 0.75 + q * 0.5;
+      return clamp(base * qMod + Math.sin(t*0.021)*0.03, 0.001, 0.999);
+    },
+    orbitMod(d,i,t){
+      const ret = Math.exp(-3 * Math.abs(d - 0.35));
+      return ret * (1 + Math.sin(t*0.018 + i) * 0.15);
+    },
+  },
+  v8:{
+    name:'RAD v8',
+    desc:'6D toroidal geometry. Viewport matrix, scale-invariant persistence, double inversion symmetry. Full cosmological scope.',
+    eqs:[
+      {l:'6D State',v:'Ψ = (S_P, M_N, Q, A_H, A_L, ε)'},
+      {l:'Torus Geometry',v:'r² = (R + a·cosθ)² + a²·sin²θ'},
+      {l:'Scale Invariance',v:'δ(scale N) ≡ δ(scale N+1)'},
+      {l:'Double Inversion',v:'n.ω ↔ n.α (Genesis ↔ Arrest)'},
+      {l:'Viewport Matrix',v:'Q resolves Scale_{N-1..N+1} only'},
+    ],
+    calcDelta(p,n,q,t){
+      const phi = t * 0.023;
+      const R = 1, a = 0.4;
+      const theta = p * Math.PI * 2;
+      const torus = (R + a * Math.cos(theta)) * n;
+      const norm = clamp(torus / (R + a), 0.001, 0.999);
+      return clamp(norm * (0.8 + q*0.4) + Math.sin(phi)*0.03, 0.001, 0.999);
+    },
+    orbitMod(d,i,t){
+      const phi = d * Math.PI * 4;
+      return 0.7 + 0.3 * Math.sin(phi + i * 1.1 + t*0.014);
+    },
+  },
+};
+
+// ── SCENARIOS ──────────────────────────────────────
+const SCENES = {
+  solar:{
+    label:'Solar System',
+    hint:'Orbital stability governed purely by δ within B.A.N.D. No gravitational constant encoded.',
+    bodies:[
+      {name:'Star',    r:26, col:'#FDB813', orbitR:0,   angle:0,    spd:0,    type:'star'},
+      {name:'Mercury', r:3.5,col:'#B5B5B5', orbitR:75,  angle:0,    spd:1.62},
+      {name:'Venus',   r:6,  col:'#E8C94A', orbitR:120, angle:1.1,  spd:1.17},
+      {name:'Earth',   r:6.5,col:'#4A9EE8', orbitR:172, angle:2.3,  spd:1.0,  trail:true},
+      {name:'Mars',    r:4.5,col:'#C1440E', orbitR:230, angle:0.7,  spd:0.81},
+      {name:'Jupiter', r:15, col:'#C88B6E', orbitR:340, angle:3.5,  spd:0.44},
+      {name:'Saturn',  r:12, col:'#EAD59A', orbitR:435, angle:1.8,  spd:0.33, rings:true},
+      {name:'Uranus',  r:8,  col:'#A8D8E8', orbitR:510, angle:0.4,  spd:0.23},
+    ],
+  },
+  stellar:{label:'Star: Birth → Death', hint:'Stellar lifecycle driven entirely by δ dynamics. Phase transitions = B.A.N.D. state changes.'},
+  particle:{label:'Particle Field', hint:'Particles persist when δ is in the corridor. Born from low-δ perturbations, annihilated when high-δ arrest fires.'},
+  economics:{label:'Economic System', hint:'Markets persist through P-N tension. Crashes emerge when δ breaches the corridor. No external economic formulas.'},
+  bigbang:{label:'Big Bang Genesis', hint:'δ = 0 singularity. The n.ω release fires when stasis becomes topologically untenable. Watch inflation and structure formation.'},
+};
+
+// ── GLOBAL STATE ───────────────────────────────────
+let G = {
+  running: false,
+  scene: 'solar',
+  math: 'v7',
+  mode: 'rad',
+  p:0.65, n:0.42, q:0.50, t:1.0,
+  delta: 0.35,
+  tick: 0,
+  events: 0,
+  arrestActive: false,
+  perturbActive: false,
+  history: [],
+  // Solar
+  bodies: [],
+  trails: {},
+  stars: null,
+  // Stellar
+  sPhase: 'nebula',
+  sTick: 0,
+  sRadius: 80,
+  sParticles: [],
+  // Particle
+  particles: [],
+  // Eco
+  agents: [],
+  ecoHist: [],
+  // Big Bang
+  bbPhase: 'pre',
+  bbTick: 0,
+  bbParts: [],
+};
+
+// ── CANVAS ─────────────────────────────────────────
+let C, ctx, HC, hCtx, raf = null;
+
+window.addEventListener('load', () => {
+  C = document.getElementById('main');
+  HC = document.getElementById('hist');
+  ctx = C.getContext('2d');
+  hCtx = HC.getContext('2d');
+  resize();
+  window.addEventListener('resize', resize);
+  loadScene('solar');
+  updateEqs();
+  render();
+});
+
+function resize() {
+  const area = document.getElementById('canvas-area');
+  C.width = area.clientWidth;
+  C.height = area.clientHeight;
+  G.stars = null; // reset starfield
+}
+
+// ── UTILS ──────────────────────────────────────────
+function clamp(v,lo,hi){ return v < lo ? lo : v > hi ? hi : v; }
+function rnd(lo,hi){ return lo + Math.random()*(hi-lo); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+function oracleState(d){
+  if(d < 0.05)  return {s:'SINGULARITY', c:'bad'};
+  if(d < 0.20)  return {s:'STALL',       c:'bad'};
+  if(d < 0.25)  return {s:'WARN LOW',    c:'warn'};
+  if(d <= 0.45) return {s:'NOMINAL',     c:'ok'};
+  if(d <= 0.52) return {s:'WARN HIGH',   c:'warn'};
+  return           {s:'RUPTURE',         c:'bad'};
+}
+
+// ── CONTROLS ───────────────────────────────────────
+function setParam(k,v){
+  G[k] = v;
+  const labels = {p:'vp',n:'vn',q:'vq',t:'vt'};
+  document.getElementById(labels[k]).textContent = k==='t' ? v.toFixed(1)+'×' : v.toFixed(2);
+}
+
+function togglePlay(){
+  G.running = !G.running;
+  document.getElementById('playbtn').textContent = G.running ? '⏸ Pause' : '▶ Play';
+  if(G.running) loop();
+}
+
+function doStep(){
+  if(G.running) return;
+  step();
+  render();
+}
+
+function doReset(){
+  G.running = false;
+  cancelAnimationFrame(raf);
+  raf = null;
+  document.getElementById('playbtn').textContent = '▶ Play';
+  G.tick = 0; G.events = 0; G.history = [];
+  G.arrestActive = false; G.perturbActive = false;
+  G.trails = {}; G.stars = null;
+  G.sPhase = 'nebula'; G.sTick = 0; G.sRadius = 80; G.sParticles = [];
+  G.particles = []; G.agents = []; G.ecoHist = [];
+  G.bbPhase = 'pre'; G.bbTick = 0; G.bbParts = [];
+  initScene(G.scene);
+  updateMetrics();
+  render();
+}
+
+function setMode(m){
+  G.mode = m;
+  document.getElementById('btn-rad').classList.toggle('active', m==='rad');
+  document.getElementById('btn-cls').classList.toggle('active', m==='classical');
+  document.getElementById('vs-rad').classList.toggle('von', m==='rad');
+  document.getElementById('vs-cls').classList.toggle('von', m==='classical');
+  addLog('Mode: '+(m==='rad'?'RAD Mechanics':'Classical Baseline'), m==='rad'?'lok':'lwarn');
+}
+
+function setMath(v){
+  G.math = v;
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mv-'+v).classList.add('active');
+  updateEqs();
+  document.getElementById('clabel').textContent = SCENES[G.scene].label+' — '+MV[v].name;
+}
+
+function loadScene(id){
+  G.scene = id;
+  document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+  document.getElementById('clabel').textContent = SCENES[id].label+' — '+MV[G.math].name;
+  document.getElementById('covr').textContent = SCENES[id].hint;
+  doReset();
+}
+
+function initScene(id){
+  G.bodies = [];
+  if(id==='solar'){
+    SCENES.solar.bodies.forEach(b=>{
+      G.bodies.push({
+        ...b,
+        baseSpd: b.spd,
+        baseR: b.orbitR,
+        curR: b.orbitR,
+        a: b.angle,
+        curSpd: b.spd,
+      });
+    });
+  }
+  if(id==='particle'){
+    for(let i=0;i<20;i++) spawnParticle();
+  }
+  if(id==='economics'){
+    for(let i=0;i<40;i++){
+      G.agents.push({
+        x: rnd(60, C.width-60),
+        y: rnd(60, C.height-60),
+        wealth: rnd(0.2, 0.8),
+        vx: rnd(-0.5,0.5),
+        vy: rnd(-0.5,0.5),
+      });
+    }
+  }
+}
+
+// ── MAIN LOOP ──────────────────────────────────────
+function loop(){
+  if(!G.running){ raf = null; return; }
+  const steps = Math.max(1, Math.round(G.t));
+  for(let i=0;i<steps;i++) step();
+  render();
+  raf = requestAnimationFrame(loop);
+}
+
+function step(){
+  G.tick++;
+  const mv = MV[G.math];
+  G.delta = mv.calcDelta(G.p, G.n, G.q, G.tick);
+  G.history.push(G.delta);
+  if(G.history.length > 240) G.history.shift();
+
+  const oracle = oracleState(G.delta);
+
+  // Arrest gate (high δ)
+  if(G.delta > 0.52 && !G.arrestActive){
+    G.arrestActive = true;
+    G.events++;
+    addLog(`Arrest gate — suspending trajectory (δ=${G.delta.toFixed(3)})`, 'lghost');
+  } else if(G.delta <= 0.48) G.arrestActive = false;
+
+  // Perturbation gate (low δ)
+  if(G.delta < 0.20 && !G.perturbActive){
+    G.perturbActive = true;
+    G.events++;
+    addLog(`Perturbation gate — injecting asymmetry (δ=${G.delta.toFixed(3)})`, 'lgen');
+  } else if(G.delta >= 0.25) G.perturbActive = false;
+
+  // Tick each scenario
+  if(G.mode === 'rad'){
+    if(G.scene==='solar')     tickSolar();
+    else if(G.scene==='stellar')   tickStellar();
+    else if(G.scene==='particle')  tickParticle();
+    else if(G.scene==='economics') tickEco();
+    else if(G.scene==='bigbang')   tickBigBang();
+  } else {
+    tickClassical();
+  }
+
+  updateMetrics();
+}
+
+// ── SOLAR ──────────────────────────────────────────
+function tickSolar(){
+  const d = G.delta;
+  const mv = MV[G.math];
+  const dt = 0.016;
+
+  G.bodies.forEach((b,i)=>{
+    if(b.type==='star') return;
+    const mod = mv.orbitMod(d, i, G.tick);
+    // Arrest gate freezes orbital progression
+    if(G.arrestActive){ b.curSpd = lerp(b.curSpd, 0, 0.1); }
+    else { b.curSpd = lerp(b.curSpd, b.baseSpd * mod, 0.05); }
+    // Perturbation gate injects orbital jitter
+    if(G.perturbActive) b.a += (Math.random()-0.5)*0.04;
+    b.a += b.curSpd * dt;
+
+    // Orbital radius breathes with δ
+    const breathe = 1 + (d - 0.35) * 0.25 * Math.sin(G.tick*0.008 + i*0.9);
+    b.curR = b.baseR * breathe;
+
+    // Trail
+    if(b.trail){
+      if(!G.trails[b.name]) G.trails[b.name]=[];
+      const cx = C.width/2 + Math.cos(b.a)*b.curR;
+      const cy = C.height/2 + Math.sin(b.a)*b.curR;
+      G.trails[b.name].push({x:cx, y:cy, a:0.55});
+      if(G.trails[b.name].length > 140) G.trails[b.name].shift();
+      G.trails[b.name].forEach(pt=>{ pt.a *= 0.983; });
+    }
+  });
+}
+
+// ── STELLAR ────────────────────────────────────────
+const STELLAR_PHASES = ['nebula','protostar','main_sequence','red_giant','supernova','remnant'];
+const STELLAR_THRESHOLDS = [100, 260, 700, 830, 880, Infinity];
+const STELLAR_MSGS = [
+  'Protostar ignition — δ rising through BAND',
+  'Main sequence — δ stable in corridor',
+  'Red giant expansion — δ drifting high',
+  'Supernova — arrest gate fires',
+  'Remnant forming — new corridor stabilizing',
+];
+const STELLAR_COLORS = {
+  nebula:'#9088cc', protostar:'#ff8844', main_sequence:'#FDB813',
+  red_giant:'#ff4422', supernova:'#ffffff', remnant:'#8ab4c8'
+};
+const STELLAR_TARGET_R = {
+  nebula:70, protostar:28, main_sequence:22, red_giant:65, supernova:8, remnant:7
+};
+
+function tickStellar(){
+  const d = G.delta;
+  G.sTick++;
+  const pIdx = STELLAR_PHASES.indexOf(G.sPhase);
+  if(G.sTick > STELLAR_THRESHOLDS[pIdx] && pIdx < STELLAR_PHASES.length-1){
+    G.sPhase = STELLAR_PHASES[pIdx+1];
+    G.events++;
+    addLog(STELLAR_MSGS[pIdx], pIdx>2?'lrupt':'lok');
+    G.sParticles = [];
+  }
+  // Radius governed by δ
+  const target = STELLAR_TARGET_R[G.sPhase] * (0.85 + d*0.3);
+  G.sRadius = lerp(G.sRadius, target, 0.04);
+
+  // Emit particles during nebula and supernova
+  if((G.sPhase==='nebula'||G.sPhase==='supernova') && Math.random()<0.3){
+    const ang = Math.random()*Math.PI*2;
+    const spd = G.sPhase==='supernova' ? rnd(2,6) : rnd(0.3,1.2);
+    G.sParticles.push({
+      x:C.width/2, y:C.height/2,
+      vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd,
+      r: rnd(1,3), life:1.0,
+      col: G.sPhase==='supernova'?'#fff7aa':'#aa99ff'
+    });
+  }
+  G.sParticles = G.sParticles.filter(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.life-=0.012; p.r*=0.997;
+    return p.life>0 && p.r>0.2;
+  });
+}
+
+// ── PARTICLE ───────────────────────────────────────
+function spawnParticle(){
+  const d = G.delta;
+  const ang = Math.random()*Math.PI*2;
+  const spd = 0.4 + d*2.5;
+  const dist = rnd(20, Math.min(C.width, C.height)*0.35);
+  G.particles.push({
+    x: C.width/2 + Math.cos(ang)*dist*0.3,
+    y: C.height/2 + Math.sin(ang)*dist*0.3,
+    vx: Math.cos(ang+Math.PI/2)*spd*0.6,
+    vy: Math.sin(ang+Math.PI/2)*spd*0.6,
+    r: 1.5 + d*3.5,
+    life: 0.7+Math.random()*0.3,
+    col: d>0.45?'#c86e6e': d<0.25?'#9a6ec8':'#5cb87a',
+  });
+}
+
+function tickParticle(){
+  const d = G.delta;
+  // Perturbation gate spawns particles from vacuum
+  if(G.perturbActive || Math.random() < d*0.12) spawnParticle();
+  // Arrest gate decays particles fast
+  const decayRate = G.arrestActive ? 0.06 : 0.008;
+
+  G.particles = G.particles.filter(p=>{
+    p.x += p.vx; p.y += p.vy;
+    // RAD confinement — particles attracted toward corridor center
+    const dx = C.width/2 - p.x;
+    const dy = C.height/2 - p.y;
+    const dist = Math.sqrt(dx*dx+dy*dy)+0.001;
+    const pull = (d - 0.35)*0.04;
+    p.vx += (dx/dist)*pull;
+    p.vy += (dy/dist)*pull;
+    p.vx *= 0.995; p.vy *= 0.995;
+    p.life -= decayRate;
+    p.r *= 0.999;
+    return p.life>0 && p.r>0.3 && p.x>0 && p.x<C.width && p.y>0 && p.y<C.height;
+  });
+  if(G.particles.length > 320) G.particles.splice(0, G.particles.length-320);
+}
+
+// ── ECONOMICS ──────────────────────────────────────
+function tickEco(){
+  const d = G.delta;
+  G.ecoHist.push(d);
+  if(G.ecoHist.length>200) G.ecoHist.shift();
+
+  G.agents.forEach(a=>{
+    // Wealth evolves with δ
+    const growthRate = (d - 0.35)*0.04 + (Math.random()-0.5)*0.008;
+    a.wealth = clamp(a.wealth + growthRate, 0.02, 1);
+
+    // Movement turbulence increases with distance from BAND center
+    const turb = 0.8 + Math.abs(d-0.35)*4;
+    a.vx += (Math.random()-0.5)*0.3*turb;
+    a.vy += (Math.random()-0.5)*0.3*turb;
+    a.vx *= 0.92; a.vy *= 0.92;
+    a.x = clamp(a.x+a.vx, 8, C.width-8);
+    a.y = clamp(a.y+a.vy, 8, C.height-8);
+
+    // Arrest gate freezes agents
+    if(G.arrestActive){ a.vx*=0.3; a.vy*=0.3; }
+  });
+}
+
+// ── BIG BANG ───────────────────────────────────────
+function tickBigBang(){
+  G.bbTick++;
+  const d = G.delta;
+
+  const phases = ['pre','release','inflation','cooling','structure'];
+  const thresholds = [70, 130, 300, 500, Infinity];
+  const pIdx = phases.indexOf(G.bbPhase);
+  if(G.bbTick > thresholds[pIdx] && pIdx < phases.length-1){
+    G.bbPhase = phases[pIdx+1];
+    G.events++;
+    const msgs = [
+      'n.ω fires — stasis broken, release begins',
+      'Inflation — δ spiking, B.A.N.D. breached',
+      'Arrest gate — inflation halted, cooling begins',
+      'Structure formation — δ returning to corridor',
+    ];
+    addLog(msgs[pIdx], pIdx===0?'lgen':pIdx===2?'lghost':'lok');
+
+    if(G.bbPhase==='inflation'){
+      for(let i=0;i<60;i++) spawnBBPart(0.05);
+    }
+    if(G.bbPhase==='structure'){
+      for(let i=0;i<40;i++) spawnBBPart(0.01);
+    }
+  }
+
+  // Inflate particles
+  G.bbParts.forEach(p=>{
+    const spd = G.bbPhase==='inflation' ? 1.8 : G.bbPhase==='cooling' ? 0.9 : 0.2;
+    p.x += p.vx*spd; p.y += p.vy*spd;
+    if(G.bbPhase==='structure'){
+      // Gravitate toward cluster centers (δ-governed)
+      const cx=C.width/2, cy=C.height/2;
+      p.vx += (cx-p.x)*0.00008*(d*2);
+      p.vy += (cy-p.y)*0.00008*(d*2);
+    }
+    p.vx*=0.998; p.vy*=0.998;
+    p.life = Math.min(1, p.life+0.008);
+  });
+
+  if(G.bbPhase==='inflation' && Math.random()<0.25) spawnBBPart(0.03);
+  if(G.bbParts.length>700) G.bbParts.splice(0,G.bbParts.length-700);
+}
+
+function spawnBBPart(spd){
+  const ang = Math.random()*Math.PI*2;
+  const s = spd*(0.5+Math.random()*2);
+  G.bbParts.push({
+    x:C.width/2, y:C.height/2,
+    vx:Math.cos(ang)*s, vy:Math.sin(ang)*s,
+    r:0.8+Math.random()*1.8, life:0.01,
+    col:['#c8a96e','#8ab4c8','#5cb87a','#9a6ec8','#c86e6e'][Math.floor(Math.random()*5)]
+  });
+}
+
+// ── CLASSICAL BASELINE ─────────────────────────────
+function tickClassical(){
+  if(G.scene==='solar'){
+    G.bodies.forEach(b=>{
+      if(b.type==='star') return;
+      b.a += b.baseSpd * 0.016; // constant Keplerian speed, no δ
+      b.curR = b.baseR;          // constant radius, no breathing
+      if(b.trail){
+        if(!G.trails[b.name]) G.trails[b.name]=[];
+        const cx=C.width/2+Math.cos(b.a)*b.curR;
+        const cy=C.height/2+Math.sin(b.a)*b.curR;
+        G.trails[b.name].push({x:cx,y:cy,a:0.35});
+        if(G.trails[b.name].length>140) G.trails[b.name].shift();
+        G.trails[b.name].forEach(pt=>{pt.a*=0.98;});
+      }
+    });
+  }
+  // Other classical scenarios just show placeholder
+}
+
+// ── RENDER ─────────────────────────────────────────
+function render(){
+  ctx.clearRect(0,0,C.width,C.height);
+  if(G.scene==='solar')       drawSolar();
+  else if(G.scene==='stellar')     drawStellar();
+  else if(G.scene==='particle')    drawParticle();
+  else if(G.scene==='economics')   drawEco();
+  else if(G.scene==='bigbang')     drawBigBang();
+  drawGauge();
+  drawHistory();
+}
+
+// ── DRAW SOLAR ─────────────────────────────────────
+function drawSolar(){
+  const w=C.width, h=C.height, cx=w/2, cy=h/2;
+
+  // Starfield
+  if(!G.stars){
+    G.stars=[];
+    for(let i=0;i<180;i++) G.stars.push({x:rnd(0,w),y:rnd(0,h),r:rnd(0.3,1.3),a:rnd(0.1,0.6)});
+  }
+  G.stars.forEach(s=>{
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${s.a*0.5})`; ctx.fill();
+  });
+
+  // BAND tint based on δ state
+  const d=G.delta;
+  const bandAlpha = 0.04;
+  const bandCol = d<0.2||d>0.52 ? `rgba(200,110,110,${bandAlpha})` :
+                  d<0.25||d>0.45 ? `rgba(200,154,110,${bandAlpha})` :
+                  `rgba(92,184,122,${bandAlpha})`;
+  ctx.fillStyle=bandCol; ctx.fillRect(0,0,w,h);
+
+  // Trails
+  Object.values(G.trails).forEach(trail=>{
+    ctx.beginPath();
+    trail.forEach((pt,i)=>{
+      if(i===0) ctx.moveTo(pt.x,pt.y);
+      else ctx.lineTo(pt.x,pt.y);
+    });
+    ctx.strokeStyle=`rgba(255,255,255,0.15)`;
+    ctx.lineWidth=1; ctx.stroke();
+  });
+
+  // Orbit guides (very faint)
+  G.bodies.forEach(b=>{
+    if(!b.baseR) return;
+    ctx.beginPath(); ctx.arc(cx,cy,b.curR,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  // Bodies
+  G.bodies.forEach(b=>{
+    const bx = cx + Math.cos(b.a)*(b.curR||0);
+    const by = cy + Math.sin(b.a)*(b.curR||0);
+
+    // Glow
+    const gr = ctx.createRadialGradient(bx,by,0,bx,by,b.r*3.5);
+    gr.addColorStop(0,b.col+'66'); gr.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(bx,by,b.r*3.5,0,Math.PI*2);
+    ctx.fillStyle=gr; ctx.fill();
+
+    // Body
+    ctx.beginPath(); ctx.arc(bx,by,b.r,0,Math.PI*2);
+    ctx.fillStyle=b.col; ctx.fill();
+
+    // Saturn rings
+    if(b.rings){
+      ctx.save(); ctx.translate(bx,by);
+      ctx.beginPath(); ctx.ellipse(0,0,b.r*2.2,b.r*0.55,0.25,0,Math.PI*2);
+      ctx.strokeStyle='rgba(234,213,154,0.45)'; ctx.lineWidth=2.5; ctx.stroke();
+      ctx.restore();
+    }
+
+    // Arrest glow overlay
+    if(G.arrestActive && b.type!=='star'){
+      ctx.beginPath(); ctx.arc(bx,by,b.r+2,0,Math.PI*2);
+      ctx.strokeStyle='rgba(138,180,200,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+    }
+  });
+
+  // Classical watermark
+  if(G.mode==='classical'){
+    ctx.save();
+    ctx.fillStyle='rgba(138,180,200,0.05)';
+    ctx.font='bold 64px Inter';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('CLASSICAL',cx,cy);
+    ctx.restore();
+  }
+}
+
+// ── DRAW STELLAR ───────────────────────────────────
+function drawStellar(){
+  const w=C.width, h=C.height, cx=w/2, cy=h/2;
+  const bgCols={
+    nebula:'rgba(12,6,28,1)', protostar:'rgba(28,14,6,1)',
+    main_sequence:'rgba(6,6,18,1)', red_giant:'rgba(28,6,6,1)',
+    supernova:'rgba(24,22,6,1)', remnant:'rgba(4,4,12,1)'
+  };
+  ctx.fillStyle=bgCols[G.sPhase]||'#060612'; ctx.fillRect(0,0,w,h);
+
+  // Stars bg
+  if(!G.stars){
+    G.stars=[];
+    for(let i=0;i<120;i++) G.stars.push({x:rnd(0,w),y:rnd(0,h),r:rnd(0.2,1),a:rnd(0.1,0.5)});
+  }
+  G.stars.forEach(s=>{
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${s.a*0.4})`; ctx.fill();
+  });
+
+  // Nebula particles
+  G.sParticles.forEach(p=>{
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+    g.addColorStop(0,p.col+Math.round(p.life*180).toString(16).padStart(2,'0'));
+    g.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*4,0,Math.PI*2);
+    ctx.fillStyle=g; ctx.fill();
+  });
+
+  // Star glow
+  const scol = STELLAR_COLORS[G.sPhase]||'#fff';
+  const r = G.sRadius;
+  if(r>1){
+    const sg=ctx.createRadialGradient(cx,cy,0,cx,cy,r*4);
+    sg.addColorStop(0,scol+'55'); sg.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(cx,cy,r*4,0,Math.PI*2); ctx.fillStyle=sg; ctx.fill();
+    const sg2=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    sg2.addColorStop(0,'#fff'); sg2.addColorStop(0.5,scol); sg2.addColorStop(1,scol+'88');
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle=sg2; ctx.fill();
+  }
+
+  // Phase label
+  ctx.save();
+  ctx.fillStyle='rgba(255,255,255,0.45)';
+  ctx.font='12px Inter'; ctx.textAlign='center';
+  ctx.fillText(G.sPhase.replace(/_/g,' ').toUpperCase()+'  ·  δ = '+G.delta.toFixed(3), cx, h-28);
+  ctx.restore();
+}
+
+// ── DRAW PARTICLE ──────────────────────────────────
+function drawParticle(){
+  ctx.fillStyle='rgba(5,5,5,0.18)'; ctx.fillRect(0,0,C.width,C.height);
+  const cx=C.width/2, cy=C.height/2;
+  const d=G.delta;
+  const br=Math.min(C.width,C.height)*0.28;
+
+  // BAND ring
+  ctx.beginPath(); ctx.arc(cx,cy,br,0,Math.PI*2);
+  const rc=d<0.2||d>0.52?'rgba(200,110,110,0.12)':d<0.25||d>0.45?'rgba(200,154,110,0.1)':'rgba(92,184,122,0.07)';
+  ctx.fillStyle=rc; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1; ctx.stroke();
+
+  G.particles.forEach(p=>{
+    const alpha=Math.max(0,p.life);
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*3);
+    g.addColorStop(0,p.col+Math.round(alpha*180).toString(16).padStart(2,'0'));
+    g.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.col+Math.round(alpha*255).toString(16).padStart(2,'0'); ctx.fill();
+  });
+}
+
+// ── DRAW ECO ───────────────────────────────────────
+function drawEco(){
+  ctx.fillStyle='rgba(5,5,5,0.2)'; ctx.fillRect(0,0,C.width,C.height);
+  const d=G.delta;
+
+  G.agents.forEach(a=>{
+    const h=a.wealth;
+    const r=3+h*5;
+    const col=h>0.65?'92,184,122':h>0.4?'200,169,110':'200,110,110';
+    const g=ctx.createRadialGradient(a.x,a.y,0,a.x,a.y,r*2.5);
+    g.addColorStop(0,`rgba(${col},${0.5+h*0.4})`);
+    g.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(a.x,a.y,r*2.5,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); ctx.arc(a.x,a.y,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${col},0.85)`; ctx.fill();
+  });
+
+  // B.A.N.D. health bar
+  const bw=Math.min(300,C.width*0.5), bx=(C.width-bw)/2, by=20;
+  ctx.fillStyle='rgba(20,20,20,0.8)'; ctx.fillRect(bx,by,bw,8);
+  const bc=d<0.2||d>0.52?'#c86e6e':d<0.25||d>0.45?'#c89a6e':'#5cb87a';
+  ctx.fillStyle=bc; ctx.fillRect(bx,by,bw*clamp(d/1,0,1),8);
+  ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='10px Inter'; ctx.textAlign='center';
+  ctx.fillText('B.A.N.D.  δ = '+d.toFixed(3), C.width/2, by+20); ctx.textAlign='left';
+
+  // Eco delta chart
+  if(G.ecoHist.length>2){
+    const ch=60, cw=C.width-40, cx2=20, cy2=C.height-ch-16;
+    ctx.fillStyle='rgba(14,14,14,0.7)'; ctx.fillRect(cx2,cy2,cw,ch);
+    ctx.beginPath();
+    G.ecoHist.forEach((v,i)=>{
+      const x=cx2+i/Math.max(1,G.ecoHist.length-1)*cw;
+      const y=cy2+ch*(1-v);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle='#c8a96e88'; ctx.lineWidth=1.5; ctx.stroke();
+  }
+}
+
+// ── DRAW BIG BANG ──────────────────────────────────
+function drawBigBang(){
+  const cx=C.width/2, cy=C.height/2;
+  ctx.fillStyle='#000008'; ctx.fillRect(0,0,C.width,C.height);
+
+  if(G.bbPhase==='pre'){
+    // Singularity point — δ = 0, maximum arrest
+    const t=G.bbTick*0.1;
+    const flicker=0.8+Math.sin(t*7)*0.15+Math.sin(t*13)*0.05;
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,25*flicker);
+    g.addColorStop(0,'rgba(255,255,255,0.95)');
+    g.addColorStop(0.3,'rgba(200,169,110,0.4)');
+    g.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(cx,cy,25*flicker,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,3,0,Math.PI*2); ctx.fillStyle='white'; ctx.fill();
+
+    ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font='11px Inter'; ctx.textAlign='center';
+    ctx.fillText('δ = 0.000  —  SINGULARITY', cx, cy+45);
+    ctx.fillStyle='rgba(255,255,255,0.18)';
+    ctx.fillText('Stasis maximum  ·  n.ω imminent', cx, cy+60);
+    ctx.textAlign='left';
+  } else {
+    // Particles
+    G.bbParts.forEach(p=>{
+      const alpha=clamp(p.life,0,1);
+      const g2=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*2.5);
+      g2.addColorStop(0,p.col+Math.round(alpha*200).toString(16).padStart(2,'0'));
+      g2.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r*2.5,0,Math.PI*2); ctx.fillStyle=g2; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.col+Math.round(alpha*255).toString(16).padStart(2,'0'); ctx.fill();
+    });
+
+    const labels={
+      release:'n.ω released  ·  expansion begins',
+      inflation:'Inflation phase  ·  δ breaching corridor',
+      cooling:'Arrest gate fired  ·  expansion slowing',
+      structure:'Structure formation  ·  δ returning to B.A.N.D.'
+    };
+    if(labels[G.bbPhase]){
+      ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='11px Inter'; ctx.textAlign='center';
+      ctx.fillText(labels[G.bbPhase], cx, 28); ctx.textAlign='left';
+    }
+  }
+}
+
+// ── GAUGE & HISTORY ────────────────────────────────
+function drawGauge(){
+  const d=G.delta;
+  document.getElementById('needle').style.left=(d*100)+'%';
+  document.getElementById('dbig').textContent=d.toFixed(3);
+  const oracle=oracleState(d);
+  const colMap={ok:'var(--green)',warn:'var(--orange)',bad:'var(--red)'};
+  document.getElementById('dbig').style.color=colMap[oracle.c]||'var(--text)';
+}
+
+function drawHistory(){
+  const pw=HC.parentElement.clientWidth-16;
+  if(pw<=0) return;
+  HC.width=pw; HC.height=70;
+  const w=pw, h=70;
+  hCtx.clearRect(0,0,w,h);
+
+  // Zone backgrounds
+  hCtx.fillStyle='rgba(200,110,110,0.12)'; hCtx.fillRect(0,0,w,h*0.2);
+  hCtx.fillStyle='rgba(200,110,110,0.1)';  hCtx.fillRect(0,h*0.52,w,h*(1-0.52));
+  hCtx.fillStyle='rgba(92,184,122,0.06)';  hCtx.fillRect(0,h*(1-0.52),w,h*(0.52-0.25));
+
+  if(G.history.length<2) return;
+
+  hCtx.beginPath();
+  G.history.forEach((v,i)=>{
+    const x=i/(G.history.length-1)*w;
+    const y=h*(1-v);
+    i===0?hCtx.moveTo(x,y):hCtx.lineTo(x,y);
+  });
+  hCtx.strokeStyle='#c8a96e'; hCtx.lineWidth=1.5; hCtx.stroke();
+  hCtx.lineTo(w,h); hCtx.lineTo(0,h); hCtx.closePath();
+  hCtx.fillStyle='rgba(200,169,110,0.07)'; hCtx.fill();
+
+  // Target line at 0.35
+  hCtx.beginPath(); hCtx.moveTo(0,h*0.65); hCtx.lineTo(w,h*0.65);
+  hCtx.strokeStyle='rgba(92,184,122,0.35)'; hCtx.lineWidth=1;
+  hCtx.setLineDash([3,4]); hCtx.stroke(); hCtx.setLineDash([]);
+}
+
+// ── METRICS ────────────────────────────────────────
+function updateMetrics(){
+  const d=G.delta;
+  const oracle=oracleState(d);
+  const colMap={ok:'ok',warn:'warn',bad:'bad'};
+  const dEl=document.getElementById('mv-delta');
+  dEl.textContent=d.toFixed(3); dEl.className='met-v '+colMap[oracle.c];
+  const sEl=document.getElementById('mv-state');
+  sEl.textContent=G.arrestActive?'ARRESTED':oracle.s;
+  sEl.className='met-v '+(G.arrestActive?'ghost':colMap[oracle.c]);
+  document.getElementById('mv-tick').textContent=G.tick;
+  document.getElementById('mv-evt').textContent=G.events;
+}
+
+// ── EQUATIONS ──────────────────────────────────────
+function updateEqs(){
+  const mv=MV[G.math];
+  document.getElementById('eq-name').textContent=mv.name;
+  document.getElementById('eq-desc').textContent=mv.desc;
+  document.getElementById('eq-content').innerHTML=mv.eqs.map(e=>`
+    <div class="eq-box">
+      <div class="eq-lab">${e.l}</div>
+      <div class="eq-val">${e.v}</div>
+    </div>`).join('');
+}
+
+// ── LOG ────────────────────────────────────────────
+function addLog(msg, cls=''){
+  const log=document.getElementById('log');
+  const el=document.createElement('div');
+  el.className=cls;
+  el.textContent=`[${G.tick}] ${msg}`;
+  log.prepend(el);
+  while(log.children.length>40) log.removeChild(log.lastChild);
+}
+</script>
+</body>
+</html>
