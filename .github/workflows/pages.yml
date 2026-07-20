@@ -22,14 +22,43 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Create withdrawn-site artifact
+        shell: bash
+        run: |
+          mkdir -p _site
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+            <title>Publication Withdrawn</title>
+            <style>
+              :root { color-scheme: dark; }
+              * { box-sizing: border-box; }
+              body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0d0d0d; color: #e8e4dc; font: 16px/1.65 system-ui, sans-serif; padding: 2rem; }
+              main { width: min(680px, 100%); border: 1px solid #2b2b2b; padding: clamp(2rem, 7vw, 4rem); background: #131313; }
+              h1 { margin: 0 0 1rem; font: 400 clamp(2rem, 7vw, 3.5rem)/1.1 Georgia, serif; }
+              p { margin: 0; color: #aaa49b; }
+            </style>
+          </head>
+          <body>
+            <main>
+              <h1>Publication withdrawn.</h1>
+              <p>This site has been taken offline pending a corrected and independently reviewable replacement. Earlier material published here should not be treated as authoritative.</p>
+            </main>
+          </body>
+          </html>
+          HTML
+          cp _site/index.html _site/404.html
+          touch _site/.nojekyll
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload artifact
+      - name: Upload withdrawn-site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
-      - name: Deploy to GitHub Pages
+          path: _site
+      - name: Deploy withdrawn site
         id: deployment
         uses: actions/deploy-pages@v4
