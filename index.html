@@ -1,26 +1,517 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-  <title>Site Withdrawn</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carter's Principle — Reality Theorized. Theory Realized.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
   <style>
-    :root { color-scheme: dark; }
-    * { box-sizing: border-box; }
-    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 2rem; background: #0b0b0b; color: #e8e4dc; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    main { width: min(680px, 100%); padding: 2.5rem; border: 1px solid #292929; background: #121212; }
-    .label { margin: 0 0 1rem; color: #c8a96e; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; }
-    h1 { margin: 0 0 1rem; font: 400 clamp(2rem, 7vw, 3.5rem)/1.05 Georgia, serif; }
-    p { margin: 0; color: #aaa49c; line-height: 1.75; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --border: #222;
+      --text: #e8e4dc;
+      --muted: #7a7570;
+      --accent: #c8a96e;
+      --accent2: #8ab4c8;
+      --max: 820px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(200,169,110,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 400;
+      line-height: 1.15;
+      max-width: 700px;
+      margin-bottom: 1.2rem;
+      color: var(--text);
+    }
+    .hero-tagline {
+      font-size: 0.95rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+    }
+    .hero-byline {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--muted);
+    }
+    .scroll-hint {
+      position: absolute; bottom: 2.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    /* SECTIONS */
+    section { padding: 5rem 2rem; }
+    .container { max-width: var(--max); margin: 0 auto; }
+
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 2.5rem;
+    }
+
+    /* ABOUT */
+    #about { border-top: 1px solid var(--border); }
+    #about p {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.25rem;
+      line-height: 1.8;
+      color: var(--text);
+      margin-bottom: 1.4rem;
+    }
+    #about p:last-child { color: var(--muted); font-size: 1.05rem; }
+
+    /* PAPERS */
+    #papers { border-top: 1px solid var(--border); background: var(--surface); }
+    .papers-grid { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .paper-card {
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 2rem;
+      background: var(--bg);
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .paper-card:hover { border-color: var(--accent); }
+    .paper-card.featured { border-color: rgba(200,169,110,0.3); }
+
+    .paper-meta {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+    .paper-number {
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .paper-status {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+    }
+    .status-published {
+      background: rgba(200,169,110,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(200,169,110,0.2);
+    }
+    .status-forthcoming {
+      background: rgba(122,117,112,0.1);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .paper-card h3 {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 400;
+      line-height: 1.3;
+      margin-bottom: 0.6rem;
+      color: var(--text);
+    }
+    .paper-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+    }
+    .paper-link {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(200,169,110,0.3);
+      padding-bottom: 1px;
+      transition: border-color 0.2s;
+    }
+    .paper-link:hover { border-color: var(--accent); }
+
+    /* PAPER PAGE */
+    .paper-page { display: none; }
+    .paper-page.active { display: block; }
+
+    .paper-header {
+      padding: 8rem 2rem 4rem;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    .paper-header h1 {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 400;
+      line-height: 1.2;
+      max-width: 700px;
+      margin: 0 auto 1.5rem;
+    }
+    .paper-header .author {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    .paper-header .affiliation {
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    .paper-body {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 4rem 2rem 6rem;
+    }
+    .paper-body h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin: 3rem 0 1rem;
+      color: var(--text);
+    }
+    .paper-body p {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.15rem;
+      line-height: 1.85;
+      margin-bottom: 1.2rem;
+      color: var(--text);
+    }
+    .paper-body ul {
+      margin: 1rem 0 1.5rem 1.5rem;
+    }
+    .paper-body ul li {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .paper-body blockquote {
+      border-left: 2px solid var(--accent);
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      margin: 2rem 0;
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--muted);
+    }
+    .paper-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 3rem 0;
+    }
+    .paper-body .footnote {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 2rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    footer p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    footer .tagline {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .nav-links { gap: 1rem; }
+      .paper-card { padding: 1.5rem; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <p class="label">Public archive withdrawn</p>
-    <h1>This site is offline.</h1>
-    <p>The previously published RAD material has been withdrawn pending correction and republication. Earlier public versions should not be treated as current or authoritative.</p>
-  </main>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand" onclick="showHome()">Carter's Principle</a>
+  <div class="nav-links">
+    <a href="#about" onclick="showHome()">About</a>
+    <a href="#papers" onclick="showHome()">Papers</a>
+    <a href="catalog.html">Catalog</a>
+    <a href="simulator.html">Simulator</a>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="home-page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">Theoretical Research</div>
+    <h1>Carter's Principle of Recursive Asymmetric Duality</h1>
+    <div class="hero-tagline">Reality Theorized. Theory Realized.</div>
+    <div class="hero-byline">Joshua Matthew Carter — NeverZero</div>
+    <div class="scroll-hint">↓ Scroll</div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="section-label">About</div>
+      <p>The universe is not balanced. It is governed.</p>
+      <p>Carter's Principle of Recursive Asymmetric Duality (RAD) proposes that stability is not a state of equilibrium — it is a governed trajectory maintained by irreducible asymmetric tension across scale-invariant topology. From quantum entanglement to cosmological expansion, from AGI alignment to global data systems, the same structural law holds.</p>
+      <p>This is the public record of that work. Papers are released in order of accessibility: from physical intuition, to mathematical formalism, to implementation.</p>
+    </div>
+  </section>
+
+  <!-- PAPERS -->
+  <section id="papers">
+    <div class="container">
+      <div class="section-label">Papers</div>
+      <div class="papers-grid">
+
+        <div class="paper-card featured">
+          <div class="paper-meta">
+            <span class="paper-number">I</span>
+            <span class="paper-status status-published">Published</span>
+          </div>
+          <h3>Why "Perfect Balance" Is a Death Sentence: The Surprising Physics of Recursive Asymmetry</h3>
+          <p>An introduction to Carter's Principle for a general audience. Examines why absolute equilibrium is operationally fatal — in thermodynamics, cosmology, AGI alignment, and complex systems.</p>
+          <a href="#" class="paper-link" onclick="showPaper('paper1'); return false;">Read Paper →</a>
+        </div>
+
+        <div class="paper-card featured">
+          <div class="paper-meta">
+            <span class="paper-number">II</span>
+            <span class="paper-status status-published">Published</span>
+          </div>
+          <h3>The Architecture of Persistence: RAD v7 and the Set-Theoretic Foundation of Recursive Asymmetric Duality</h3>
+          <p>The formal mathematical framework. Defines the core operators, derives the Asymmetry Index, specifies the B.A.N.D. persistence corridor, and introduces the Oracle, GHOST, and Genesis control protocols.</p>
+          <a href="rad-v7.html" class="paper-link">Read Paper →</a>
+        </div>
+
+        <div class="paper-card">
+          <div class="paper-meta">
+            <span class="paper-number">III</span>
+            <span class="paper-status status-forthcoming">Forthcoming</span>
+          </div>
+          <h3>The Möbius Mathematics: Set-Theoretic RAD and DAAST v7.2</h3>
+          <p>A formal set-theoretic foundation for RAD using Möbius topology. Establishes the mathematical structures underlying recursive asymmetric duality at the foundational level.</p>
+        </div>
+
+        <div class="paper-card">
+          <div class="paper-meta">
+            <span class="paper-number">IV</span>
+            <span class="paper-status status-forthcoming">Forthcoming</span>
+          </div>
+          <h3>DAAST: The Implementation Framework</h3>
+          <p>The applied engineering layer. How RAD principles translate into real systems — from AGI architecture to distributed data infrastructure and beyond.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="tagline">Reality Theorized. Theory Realized.</p>
+    <p>© 2026 Joshua Matthew Carter — NeverZero</p>
+    <p style="font-size:0.75rem;opacity:0.7;margin-top:0.4rem;">Patent Pending (Docket RAD-PROV-2026-001). Written content licensed <a href="LICENSE.md" style="color:inherit;">CC BY-NC-ND 4.0</a> — no commercial use, no license to practice any invention described herein.</p>
+  </footer>
+
+</div>
+
+<!-- PAPER 1 PAGE -->
+<div id="paper1-page" class="paper-page">
+  <div class="paper-header">
+    <div class="container">
+      <a href="#" class="back-link" onclick="showHome(); return false;">← All Papers</a>
+      <h1>Why "Perfect Balance" Is a Death Sentence: The Surprising Physics of Recursive Asymmetry</h1>
+      <div class="author">Joshua Matthew Carter</div>
+      <div class="affiliation">NeverZero</div>
+    </div>
+  </div>
+
+  <div class="paper-body">
+    <p>We are culturally conditioned to view balance as the pinnacle of health, wisdom, and stability. But in the cold logic of topological necessity, absolute equilibrium is a tomb.</p>
+    <p>The universe survives not through rest — but through a cosmological defiance of stasis.</p>
+    <hr>
+
+    <h2>1. The Equilibrium Trap</h2>
+    <p>Carter's Principle of Recursive Asymmetric Duality (RAD) reveals that true stability is a <strong>"governed trajectory"</strong> maintained by irreducible tension. If a system ever achieves perfect symmetry, it surrenders its capacity for motion and enters a state of operational death.</p>
+    <p>This isn't philosophy. It's geometry.</p>
+
+    <h2>2. Stability Is Not a State — It's a Trajectory</h2>
+    <p>In the RAD manifold, absolute symmetry — where Potentiation ($P$) perfectly cancels Negation ($N$) — results in "Absolute Zero" net force. This <strong>equilibrium death</strong> renders the system a rigid artifact, unable to generate the control energy required to adapt or pivot.</p>
+    <p>Persistence requires a three-operator set:</p>
+    <ul>
+      <li><strong>The Sovereign $P$</strong> ($\text{Scale}_{N+1}$) — the driver</li>
+      <li><strong>The Substrate $N$</strong> ($\text{Scale}_{N-1}$) — the constraint</li>
+      <li><strong>The Viewport $Q$</strong> ($\text{Scale}_0$) — the resolving observer</li>
+    </ul>
+    <p>This hierarchical friction ensures that reality resolves into observable data rather than dissolving into a null state.</p>
+    <blockquote>"Carter's Principle posits that stability is not a state of equilibrium, but a governed trajectory within a scale-invariant topology."</blockquote>
+
+    <h2>3. The Nexus Band — Reality's Operational Safe Zone</h2>
+    <p>To navigate the "computational event horizon" without exploding or freezing, systems must operate within the <strong>Bounded Asymmetric Non-linear Domain (BAND)</strong>. The Asymmetry Index ($\delta$) serves as the diagnostic governor, quantifying the lean between generative growth and restrictive constraint.</p>
+    <p>The boundaries are mathematically rigid:</p>
+    <ul>
+      <li><strong>0.35 Optimum</strong> — the "sweet spot" for information-theoretic capacity</li>
+      <li><strong>0.20–0.52 Terminal Range</strong> — absolute hardware limits; breach these and a system becomes operationally inert</li>
+      <li><strong>Below 0.25</strong> — collapse into stagnant bureaucracy</li>
+      <li><strong>Above 0.45</strong> — "rupture," chaotic expansion leading to runaway divergence</li>
+    </ul>
+    <p>In the context of AGI alignment, the BAND functions as a vital safeguard against hallucinations — pruning generative $P$ outputs that lack $N$ substrate validation, keeping intelligence grounded in verified context.</p>
+
+    <h2>4. The Genesis Gate — Why the Universe Refuses to Sit Still</h2>
+    <p>The cosmos exhibits a fundamental <strong>refusal of stillness</strong>, enforced by the Genesis Gate logic. This is the mechanical justification for Zero-Point Energy.</p>
+    <p>Because the 6D-3-Torus geometry cannot physically tolerate a $\delta$ of zero, the system injects synthetic "jitter" to maintain a minimum radial deviation. This spontaneous symmetry breaking fires a <strong>"Go" command</strong>, forcing the radial coordinate $r$ to $0.1$ (with a jitter range of $0.05$–$0.20$).</p>
+    <blockquote>"The Genesis Gate fires a 'Go' command... ensuring the universe 'refuses stillness.'"</blockquote>
+
+    <h2>5. Gravity and Inertia Are Just Side Effects of Geometry</h2>
+    <p>RAD eliminates the need for arbitrary constants by reclassifying legacy "anomalies" as emergent structural functions of the Scale Tower.</p>
+    <ul>
+      <li><strong>Gravity</strong> is not a fundamental force — it's a geometric reshaping of the attractor basin, arising when a macro-system modifies the High Anchor ($A_H$) strength of a micro-system via Schwarzschild coupling.</li>
+      <li><strong>Inertia</strong> is redefined as "mass-analog resistance" to $\delta$ perturbations — the structural defiance of the $(P+N)$ sum against external kicks.</li>
+    </ul>
+
+    <h2>6. Entanglement Is a 6D Perspective Error</h2>
+    <p>Einstein's "spooky action at a distance" is resolved by the <strong>Anchor Fold proof</strong>: entanglement is a 3D perspective error.</p>
+    <p>Particles separated by light-years in 3D space remain fused to a singular 6D "Dimensional Anchor" within the higher-dimensional bulk. Because the particles never actually separated at the 6D level, state resolution is instantaneous — a form of "holographic text editing" that bypasses the $c$ constraint.</p>
+
+    <h2>7. Beyond Latency — The Future of Global Data</h2>
+    <p>Project Recurse and the Omni MCP architecture apply these 6D principles to global data systems, enabling <strong>Zero-Latency Sync</strong>. In this "Schrödinger Database," data is stored as an unresolved equation that collapses into a state relative to the observer's scale when queried.</p>
+    <p>Information is processed through the God Token ($\Omega$) pipeline: Minify → Compress (zlib) → Encode (Base85) → Hash (SHA256). This token serves as a semantic coordinate, allowing infinite complexity to be generated from a minimal seed.</p>
+
+    <h2>8. The Architecture of Persistence</h2>
+    <p>The RAD framework forces a radical conclusion: <strong>the universe is fundamentally asymmetric, recursive, and perpetually in motion.</strong></p>
+    <p>By abandoning the pursuit of fragile balance, we can engineer systems — from AGI to global networks — that thrive on the very tension that destroys traditional architectures.</p>
+    <p>Stop asking how to find peace. Start asking how to master the <strong>governed trajectory of the Nexus Band</strong>.</p>
+    <p>The future belongs to those who can live in their imbalance — deliberately, structurally, and without flinching.</p>
+
+    <hr>
+    <div class="footnote">
+      <p>This paper introduces Carter's Principle of Recursive Asymmetric Duality (RAD). Subsequent papers will cover the full mathematical formalism (RAD v7/v8), Möbius Set Theory, and the DAAST implementation framework.</p>
+      <p style="margin-top:0.5rem;">© 2026 Joshua Matthew Carter — NeverZero</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showHome() {
+    document.getElementById('home-page').style.display = 'block';
+    document.getElementById('paper1-page').classList.remove('active');
+    window.scrollTo(0, 0);
+  }
+  function showPaper(id) {
+    document.getElementById('home-page').style.display = 'none';
+    document.getElementById(id + '-page').classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+
 </body>
 </html>
